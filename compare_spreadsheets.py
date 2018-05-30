@@ -4,6 +4,7 @@
 
 import openpyxl
 import numpy as np
+import os,glob
 
 # ========================================================================== #
 class comparer(object):
@@ -174,6 +175,17 @@ class multifile_comparer(object):
     """
         Do a pairwise comparison of all files in a list, flag files which have 
         given similarities.
+        
+        Usage:
+            construct: c = multifile_comparer(filelist)
+                filelist: list of filenames, 
+                            OR string of directory name to fetch all contents, 
+                            OR wildcard string of filenme format.
+            compare: c.compare()
+            show results: c.print_table([filename])
+                print to stdout if filename missing
+        Derek Fujimoto
+        May 2018 
     """
 
     # some colours
@@ -189,16 +201,46 @@ class multifile_comparer(object):
     # thresholds for cell similarity (warning,fail)
     cell_sim_thresh = (0.5,0.8)
 
+    # list of good extensions
+    extensions = ('.xlsx','.xls')
+
     # ====================================================================== #
     def __init__(self,filelist):
+        """
+            filelist: list of filenames, OR string of directory to fetch all 
+                      files, or wildcard string of file format. 
+        """
         
         # save filelist
-        self.filelist = filelist
+        if type(filelist) == str:
+            self.set_filelist(filelist)
+        else:
+            self.filelist = filelist
 
         # build comparer objects
-        nfiles = len(filelist)
-        self.comparers = [comparer(filelist[i],filelist[j]) 
+        nfiles = len(self.filelist)
+        self.comparers = [comparer(self.filelist[i],self.filelist[j]) 
                             for i in range(nfiles-1) for j in range(i+1,nfiles)]
+
+    # ====================================================================== #
+    def set_filelist(self,string):
+        """
+            Get list of files based on directory structure. String is prototype 
+            filename or directory name.
+        """
+        
+        # check if string is directory: fetch all files there
+        if os.path.isdir(string):
+            if string[-1] != '/': string += '/'
+            filelist = glob.glob(string+"*")
+        
+        # otherwise get files from wildcard
+        else:
+            filelist = glob.glob(string)
+        
+        # discard all files with bad extensions
+        self.filelist = [f for f in filelist 
+                           if os.path.splitext(f)[1] in self.extensions]  
 
     # ====================================================================== #
     def compare(self,options='meta,exact',do_print=False):
@@ -212,11 +254,11 @@ class multifile_comparer(object):
             c.compare(options=options,do_print=do_print)
         
     # ====================================================================== #
-    def print_table(self,logfile=''):
+    def print_table(self,filename=''):
         """
             Print a table of pairs, with results
             
-            logfile: if not '' then write table to file, else write to stdout.
+            filename: if not '' then write table to file, else write to stdout.
         """
         
         # get column: file1 names
@@ -258,7 +300,7 @@ class multifile_comparer(object):
                 # set text color
                 s1 = value.ljust(keys_columns_size[k])
                 
-                if logfile == '':
+                if filename == '':
                     if value == "True":
                         s1 = self.colors['FAIL']+s1+self.colors['ENDC']
                     
@@ -283,10 +325,10 @@ class multifile_comparer(object):
             s += '\n'
             
         # write results
-        if logfile == '':
+        if filename == '':
             print(s)
         else:
-            with open(logfile,'a+') as fid:
+            with open(filename,'a+') as fid:
                 fid.write(s)
                 
 # ========================================================================== #
