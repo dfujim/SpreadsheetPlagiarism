@@ -260,10 +260,10 @@ class multifile_comparer(object):
                 
                 if logfile == '':
                     if value == "True":
-                        s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
+                        s1 = self.colors['FAIL']+s1+self.colors['ENDC']
                     
                     elif value == "False":
-                        s1 = self.colors['FAIL']+s1+self.colors['ENDC']
+                        s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
                     
                     elif k == 'nexcess': 
                         if float(value) == 0:
