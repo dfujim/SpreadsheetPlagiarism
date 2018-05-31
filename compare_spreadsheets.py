@@ -285,7 +285,11 @@ class multifile_comparer(object):
         s = "file1".ljust(file1_size) + "file2".ljust(file2_size)
         colkeys = list(keys_columns.keys())
         colkeys.sort()
+        
         for k in colkeys:  
+            # don't print ntotal or nsame
+            if k == 'ntotal' or k == 'nsame': continue  
+            
             s += k.ljust(keys_columns_size[k])
         s += '\n'
         s += "-"*len(s)
@@ -295,6 +299,11 @@ class multifile_comparer(object):
         for i in range(len(self.comparers)):
             s += file1[i].ljust(file1_size) + file2[i].ljust(file2_size)
             for k in colkeys:
+                
+                # don't print ntotal or nsame
+                if k == 'ntotal' or k == 'nsame': continue
+                    
+                # get value 
                 value = keys_columns[k][i]
                 
                 # set text color
