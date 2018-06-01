@@ -1,0 +1,96 @@
+#!/usr/bin/python3
+# Compare all spreadsheets in directory to each other
+# Derek Fujimoto
+# June 2018
+
+import multifile_comparer
+import os, argparse
+
+# set help message
+help_message = \
+"""
+    SPREADSHEET COMPARER ======================================
+    
+    Compare spreadsheets pairwise and flag similar spreadsheets. 
+    .xlsx and xls files only. 
+    
+    -----------------------------------------------------------
+    
+    Usage: compare_spreadsheets [options]
+    
+    Options:
+        -d, --dir=PATH
+                evaluate spreadsheets found at PATH
+    
+        -h, --help
+                print this message
+                
+        -l, --log=FILENAME
+                write printout to file (no syntax highlighting)
+        
+        -o, --options=OPTIONS
+                comma-separated list of items to compare (default: all)
+                    meta:   file meta data, create and modification times.
+                    exact:  cell value comparison
+                    string: non-formula string comparison
+                    geo:    layout comparison
+                
+"""
+
+
+# run if main
+if __name__ == '__main__':
+    
+    # set up argument parser
+    parser = argparse.ArgumentParser()
+    
+    # log
+    parser.add_argument("-l", "--log",
+                        help='write printout to file',
+                        dest='logfile',
+                        action='store',
+                        default='')
+    
+    # directory
+    parser.add_argument("-d", "--dir",
+                        help='evaluate spreadsheets found on path',
+                        dest='path',
+                        action='store',
+                        default='.')
+    
+    # options
+    opt_help="comma-separated list of items to compare "+\
+             "(default: 'meta,exact,string,geo')"
+                    
+    parser.add_argument("-o", "--options",
+                        help=opt_help,
+                        dest='options',
+                        action='store',
+                        default='meta,exact,string,geo')
+    
+    # print lines
+    parser.add_argument("-p", "--print",
+                        help='Print full summary of each comparison',
+                        dest='print',
+                        action='store_true',
+                        default=False)
+    
+    # explain headers
+    parser.add_argument("--explain",
+                        help='Print calculation methodology of table values',
+                        dest='explain',
+                        action='store_true',
+                        default=False)
+    
+    # parse
+    args = parser.parse_args()
+
+    # -----------------------------------------------------------------------
+    # Set up and run comparison
+    if args.explain:
+        print(multifile_comparer.explanation)
+    
+    else:
+        c = multifile_comparer.multifile_comparer(args.path)
+        c.compare(options=args.options,do_print=args.print)
+        c.print_table(filename=args.logfile)
