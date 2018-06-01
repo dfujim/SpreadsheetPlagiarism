@@ -22,6 +22,13 @@ class multifile_comparer(object):
             compare: c.compare()
             show results: c.print_table([filename])
                 print to stdout if filename missing
+                
+        Print headers
+            nexcess_str: len(nitems1)-len(nitems2)
+            create/mod_time: True if same, False if not
+            sim_exact: fraction of cells which are identical in position and content
+            sim_str: fraction of strings which are identical (full search)
+                
         Derek Fujimoto
         May 2018 
     """
@@ -125,8 +132,11 @@ class multifile_comparer(object):
         colkeys.sort()
         
         for k in colkeys:  
+        
             # don't print ntotal or nsame
             if 'ntotal' in k or 'nsame' in k : continue  
+            
+            # add to list
             s += k.ljust(keys_columns_size[k])
             
         s += '\n'

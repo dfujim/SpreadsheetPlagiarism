@@ -43,9 +43,9 @@ class comparer(object):
         self.results = result_dict()
         
     # ====================================================================== #
-    def cmpr_exact_values(self,do_print=False):
+    def cmpr_strings(self,do_print=False):
         """
-            Compare cell values for exact match. Not intelligent. 
+            Compare all non-formulae, non numeric entries.
             
             Output: 
                 nsame: number of cells which are identical by coordinate. 
@@ -54,54 +54,98 @@ class comparer(object):
                         range. 
                         
             Sets to results: 
-                nsame, ntotal, nexcess: as described above
-                cell_similarity: nsame/ntotal
+                nsame_str, ntotal_str, nexcess_str: as described above
+                sim_str: nsame/ntotal
+        """
+        
+        # get sheet names 
+        sheet_names1 = self.book1.sheetnames
+        sheet_names2 = self.book2.sheetnames
+        
+        # get all cell contents discarding non-strings and formulae
+        str1 = []
+        for shtnm in sheet_names1:
+            sht = self.book1[shtnm]
+            str1.extend([cell.value for row in sht.rows for cell in row 
+                                    if type(cell.value) is str and
+                                        cell.value[0] != '='])
+        str2 = []
+        for shtnm in sheet_names2:
+            sht = self.book2[shtnm]
+            str2.extend([cell.value for row in sht.rows for cell in row 
+                                    if type(cell.value) is str and
+                                        cell.value[0] != '='])    
+                
+        # difference in cell sizes
+        nexcess = abs(len(str1)-len(str2))
+            
+        # number of comparable elements
+        ntotal = min(len(str1),len(str2))
+                
+        # compare string contents 1 -- 2
+        nsame = 0
+        for s in str1:
+            if s in str2:
+                nsame += 1
+            
+        # print results
+        if do_print:
+            print("Strings with exact match: %d/%d (%.2f" % \
+                        (nsame,ntotal,float(nsame)/ntotal*100) +\
+                  "%) " + "with %d strings in excess." % nexcess)            
+        
+        # set to self
+        self.results['nsame_str'] = nsame
+        self.results['ntotal_str'] = ntotal
+        self.results['nexcess_str'] = nexcess
+        self.results['sim_str'] = np.around(float(nsame)/ntotal,4)
+        
+        return (nsame,ntotal,nexcess)
+        
+    # ====================================================================== #
+    def cmpr_exact_values(self,do_print=False):
+        """
+            Compare cell values for exact match. Not intelligent. 
+            
+            Output: 
+                nsame: number of cells which are identical by coordinate. 
+                ntotal: number of cells total which are in a shared range. 
+                        
+            Sets to results: 
+                nsame, ntotal: as described above
+                sim_exact: nsame/ntotal
         """
         
         # track statistics
         nsame = 0
         ntotal = 0
-        nexcess = 0
         
         # get sheet names 
         sheet_names1 = self.book1.sheetnames
         sheet_names2 = self.book2.sheetnames
+        
+        # make a weak attempt at comparing the same sheets
+        sheet_names1.sort()
+        sheet_names2.sort()
         
         # iterate over sheets
         for sht1nm,sht2nm in zip(sheet_names1,sheet_names2):
             sht1 = self.book1[sht1nm]
             sht2 = self.book2[sht2nm]
             
-            # iterate over cells
-            sheet1_cells = [cell.value for row in sht1.rows for cell in row]
-            sheet2_cells = [cell.value for row in sht2.rows for cell in row]
-
+            # iterate over cells, ignoring empty cells
+            sheet1 = [[cell.value for cell in row 
+                                        if type(cell.value) is not type(None)] 
+                                        for row in sht1.rows]
+            sheet2 = [[cell.value for cell in row 
+                                        if type(cell.value) is not type(None)] 
+                                        for row in sht2.rows]
+            
             # compare cells for which there is identical content
-            size = min(len(sheet1_cells),len(sheet2_cells))
-            cmpr = np.equal(sheet1_cells[:size],sheet2_cells[:size])
-            ntotal += len(cmpr)
-            nsame += np.sum(cmpr)
-            
-            # add content that is in excess from one sheet
-            if len(sheet1_cells) > len(sheet2_cells):
-                nexcess += np.sum(np.array(sheet1_cells[size:]) != None)
-            else:
-                nexcess += np.sum(np.array(sheet2_cells[size:]) != None)
-            
-        # check for excess sheets
-        ndiff_sheets = abs(len(sheet_names1)-len(sheet_names2))
-        if ndiff_sheets != 0:            
-            
-            # get exces sheets
-            if len(sheet_names1) > len(sheet_names2):
-                sheets = [self.book1[n] for n in sheet_names1[len(sheet_names2):]]
-            else:
-                sheets = [self.book2[n] for n in sheet_names2[len(sheet_names1):]]
-            
-            # count number of excess cells in excess sheets    
-            for sht in sheets:
-                cells = [cell.value for row in sht.rows for cell in row]
-                nexcess += np.sum(np.array(cells) != None)
+            for row1,row2 in zip(sheet1,sheet2):
+                for cell1,cell2 in zip(row1,row2):    
+                    if cell1 == cell2: nsame += 1
+                    ntotal += 1
                 
         # print results
         if do_print:
@@ -112,10 +156,9 @@ class comparer(object):
         # set to self
         self.results['nsame'] = nsame
         self.results['ntotal'] = ntotal
-        self.results['nexcess'] = nexcess
-        self.results['cell_similarity'] = np.around(float(nsame)/ntotal,4)
+        self.results['sim_exact'] = np.around(float(nsame)/ntotal,4)
         
-        return (nsame,ntotal,nexcess)
+        return (nsame,ntotal)
         
     # ====================================================================== #
     def cmpr_meta(self,do_print=False):
@@ -145,13 +188,13 @@ class comparer(object):
             print('Sheet creation time is identical:     %s' % str(create))
         
         # set to self
-        self.results['same_modify_time'] = mod
-        self.results['same_create_time'] = create
+        self.results['modify_time'] = mod
+        self.results['create_time'] = create
         
         return (mod,create)
 
     # ====================================================================== #
-    def compare(self,options='meta,exact',do_print=False):
+    def compare(self,options='meta,exact,string',do_print=False):
         """
             Run comparisons on the two files
             
@@ -169,176 +212,9 @@ class comparer(object):
         
         if 'exact' in options: 
             self.cmpr_exact_values(do_print=do_print)
-
-# ========================================================================== #
-class multifile_comparer(object):
-    """
-        Do a pairwise comparison of all files in a list, flag files which have 
-        given similarities.
-        
-        Usage:
-            construct: c = multifile_comparer(filelist)
-                filelist: list of filenames, 
-                            OR string of directory name to fetch all contents, 
-                            OR wildcard string of filenme format.
-            compare: c.compare()
-            show results: c.print_table([filename])
-                print to stdout if filename missing
-        Derek Fujimoto
-        May 2018 
-    """
-
-    # some colours
-    colors={'HEADER':'\033[95m',
-            'OKBLUE':'\033[94m',
-            'OKGREEN':'\033[92m',
-            'WARNING':'\033[93m',
-            'FAIL':'\033[91m',
-            'ENDC':'\033[0m',
-            'BOLD':'\033[1m',
-            'UNDERLINE':'\033[4m'}
             
-    # thresholds for cell similarity (warning,fail)
-    cell_sim_thresh = (0.5,0.8)
-
-    # list of good extensions
-    extensions = ('.xlsx','.xls')
-
-    # ====================================================================== #
-    def __init__(self,filelist):
-        """
-            filelist: list of filenames, OR string of directory to fetch all 
-                      files, or wildcard string of file format. 
-        """
-        
-        # save filelist
-        if type(filelist) == str:
-            self.set_filelist(filelist)
-        else:
-            self.filelist = filelist
-
-        # build comparer objects
-        nfiles = len(self.filelist)
-        self.comparers = [comparer(self.filelist[i],self.filelist[j]) 
-                            for i in range(nfiles-1) for j in range(i+1,nfiles)]
-
-    # ====================================================================== #
-    def set_filelist(self,string):
-        """
-            Get list of files based on directory structure. String is prototype 
-            filename or directory name.
-        """
-        
-        # check if string is directory: fetch all files there
-        if os.path.isdir(string):
-            if string[-1] != '/': string += '/'
-            filelist = glob.glob(string+"*")
-        
-        # otherwise get files from wildcard
-        else:
-            filelist = glob.glob(string)
-        
-        # discard all files with bad extensions
-        self.filelist = [f for f in filelist 
-                           if os.path.splitext(f)[1] in self.extensions]  
-
-    # ====================================================================== #
-    def compare(self,options='meta,exact',do_print=False):
-        """
-            Run comparisons on the paired files
-            
-            Options: same as comparer.compare
-        """
-        
-        for c in self.comparers:
-            c.compare(options=options,do_print=do_print)
-        
-    # ====================================================================== #
-    def print_table(self,filename=''):
-        """
-            Print a table of pairs, with results
-            
-            filename: if not '' then write table to file, else write to stdout.
-        """
-        
-        # get column: file1 names
-        file1 = [c.file1 + " " for c in self.comparers]
-        file1_size = max(map(len,file1))
-            
-        # get column: file2 names
-        file2 = [c.file2 + " " for c in self.comparers]
-        file2_size = max(map(len,file2))    
-    
-        # get columns: keys
-        keys_columns = {}
-        for c in self.comparers:
-            for k in c.results.keys():
-                try: 
-                    keys_columns[k].append(str(c.results[k]))
-                except KeyError:
-                    keys_columns[k] = [str(c.results[k])]
-        keys_columns_size = {}
-        for k in keys_columns.keys():
-            keys_columns_size[k] = max(len(k),max(map(len,keys_columns[k])))+2
-    
-        # make print header
-        s = "file1".ljust(file1_size) + "file2".ljust(file2_size)
-        colkeys = list(keys_columns.keys())
-        colkeys.sort()
-        
-        for k in colkeys:  
-            # don't print ntotal or nsame
-            if k == 'ntotal' or k == 'nsame': continue  
-            
-            s += k.ljust(keys_columns_size[k])
-        s += '\n'
-        s += "-"*len(s)
-        s += '\n'
-        
-        # make print columns
-        for i in range(len(self.comparers)):
-            s += file1[i].ljust(file1_size) + file2[i].ljust(file2_size)
-            for k in colkeys:
-                
-                # don't print ntotal or nsame
-                if k == 'ntotal' or k == 'nsame': continue
-                    
-                # get value 
-                value = keys_columns[k][i]
-                
-                # set text color
-                s1 = value.ljust(keys_columns_size[k])
-                
-                if filename == '':
-                    if value == "True":
-                        s1 = self.colors['FAIL']+s1+self.colors['ENDC']
-                    
-                    elif value == "False":
-                        s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
-                    
-                    elif k == 'nexcess': 
-                        if float(value) == 0:
-                            s1 = self.colors['WARNING']+s1+self.colors['ENDC']
-                        else:
-                            s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
-                    
-                    elif k == 'cell_similarity':
-                        if float(value) > self.cell_sim_thresh[0]:
-                            if float(value) > self.cell_sim_thresh[1]:
-                                s1 = self.colors['FAIL']+s1+self.colors['ENDC']
-                            else:
-                                s1 = self.colors['WARNING']+s1+self.colors['ENDC']
-                        else:
-                            s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
-                s += s1
-            s += '\n'
-            
-        # write results
-        if filename == '':
-            print(s)
-        else:
-            with open(filename,'a+') as fid:
-                fid.write(s)
+        if 'string' in options:
+            self.cmpr_strings(do_print=do_print)
                 
 # ========================================================================== #
 class result_dict(dict):
