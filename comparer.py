@@ -150,13 +150,69 @@ class comparer(object):
         # print results
         if do_print:
             print("Shared range cell content exact match: %d/%d (%.2f" % \
-                        (nsame,ntotal,float(nsame)/ntotal*100) +\
-                  "%) " + "with %d cells in excess." % nexcess)            
+                        (nsame,ntotal,float(nsame)/ntotal*100) + "%)")
         
         # set to self
-        self.results['nsame'] = nsame
-        self.results['ntotal'] = ntotal
+        self.results['nsame_xct'] = nsame
+        self.results['ntotal_xct'] = ntotal
         self.results['sim_exact'] = np.around(float(nsame)/ntotal,4)
+        
+        return (nsame,ntotal)
+        
+    # ====================================================================== #
+    def cmpr_geo(self,do_print=False):
+        """
+            Compare cell geography (Filled/unfilled)
+            
+            Output: 
+                nsame: number of cells which are identical by coordinate. 
+                ntotal: number of cells total which are in a shared range. 
+                        
+            Sets to results: 
+                nsame, ntotal: as described above
+                sim_geo: nsame/ntotal
+        """
+        
+        # track statistics
+        nsame = 0
+        ntotal = 0
+        
+        # get sheet names 
+        sheet_names1 = self.book1.sheetnames
+        sheet_names2 = self.book2.sheetnames
+        
+        # make a weak attempt at comparing the same sheets
+        sheet_names1.sort()
+        sheet_names2.sort()
+        
+        # iterate over sheets
+        for sht1nm,sht2nm in zip(sheet_names1,sheet_names2):
+            sht1 = self.book1[sht1nm]
+            sht2 = self.book2[sht2nm]
+            
+            # iterate over cells, ignoring empty cells
+            sheet1 = [[cell.value for cell in row] for row in sht1.rows]
+            sheet2 = [[cell.value for cell in row] for row in sht2.rows]
+            
+            # compare cells for which there is identical content
+            for row1,row2 in zip(sheet1,sheet2):
+                for cell1,cell2 in zip(row1,row2):    
+                    
+                    # either both filled or both not filled
+                    if (type(cell1) != type(None) and type(cell2) != type(None))\
+                    or (type(cell1) == type(None) and type(cell2) == type(None)): 
+                        nsame += 1
+                    ntotal += 1
+                
+        # print results
+        if do_print:
+            print("Shared range cell content geography match: %d/%d (%.2f" % \
+                        (nsame,ntotal,float(nsame)/ntotal*100) + "%)")
+        
+        # set to self
+        self.results['nsame_geo'] = nsame
+        self.results['ntotal_geo'] = ntotal
+        self.results['sim_geo'] = np.around(float(nsame)/ntotal,4)
         
         return (nsame,ntotal)
         
@@ -194,13 +250,15 @@ class comparer(object):
         return (mod,create)
 
     # ====================================================================== #
-    def compare(self,options='meta,exact,string',do_print=False):
+    def compare(self,options='meta,exact,string,geo',do_print=False):
         """
             Run comparisons on the two files
             
             Options: 
                 meta: compare metadata
-                exact: compare cell values by coordinate
+                exact: compare non-empty cell values by coordinate
+                string: exahaustive search for same strings (non-formulae)
+                geo: compare filled/unfilled cell geography
         """
         
         # get options
@@ -215,6 +273,9 @@ class comparer(object):
             
         if 'string' in options:
             self.cmpr_strings(do_print=do_print)
+            
+        if 'geo' in options:
+            self.cmpr_geo(do_print=do_print)
                 
 # ========================================================================== #
 class result_dict(dict):

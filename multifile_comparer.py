@@ -26,8 +26,8 @@ class multifile_comparer(object):
         Print headers
             nexcess_str: len(nitems1)-len(nitems2)
             create/mod_time: True if same, False if not
-            sim_exact: fraction of cells which are identical in position and content
-            sim_str: fraction of strings which are identical (full search)
+            sim_exact: fraction of cells which are identical in position and content, ignoring empty cells
+            sim_str: fraction of strings which are identical, ignore excess strings (full search)
                 
         Derek Fujimoto
         May 2018 
@@ -88,7 +88,7 @@ class multifile_comparer(object):
                            if os.path.splitext(f)[1] in self.extensions]  
 
     # ====================================================================== #
-    def compare(self,options='meta,exact,string',do_print=False):
+    def compare(self,options='meta,exact,string,geo',do_print=False):
         """
             Run comparisons on the paired files
             
