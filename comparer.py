@@ -5,6 +5,7 @@
 import openpyxl
 import numpy as np
 import os,glob
+import warnings
 
 # ========================================================================== #
 class comparer(object):
@@ -36,8 +37,12 @@ class comparer(object):
         
         self.file1 = file1
         self.file2 = file2
-        self.book1 = openpyxl.load_workbook(file1)
-        self.book2 = openpyxl.load_workbook(file2)
+        
+        # open books, ignore warnings raised by unsupported formatting
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.book1 = openpyxl.load_workbook(file1)
+            self.book2 = openpyxl.load_workbook(file2)
         
         # results
         self.results = result_dict()
@@ -87,18 +92,24 @@ class comparer(object):
         for s in str1:
             if s in str2:
                 nsame += 1
+           
+        # get similarity
+        try:
+            sim = float(nsame)/ntotal
+        except ZeroDivisionError:
+            sim = np.nan
             
         # print results
         if do_print:
             print("Strings with exact match: %d/%d (%.2f" % \
-                        (nsame,ntotal,float(nsame)/ntotal*100) +\
+                        (nsame,ntotal,sim*100) +\
                   "%) " + "with %d strings in excess." % nexcess)            
         
         # set to self
         self.results['nsame_str'] = nsame
         self.results['ntotal_str'] = ntotal
         self.results['nexcess_str'] = nexcess
-        self.results['sim_str'] = np.around(float(nsame)/ntotal,4)
+        self.results['sim_str'] = np.around(sim,4)
         
         return (nsame,ntotal,nexcess)
         
@@ -117,45 +128,66 @@ class comparer(object):
         """
         
         # track statistics
-        nsame = 0
-        ntotal = 0
+        same = []
+        total = []
+        sim_frac = []
         
         # get sheet names 
         sheet_names1 = self.book1.sheetnames
         sheet_names2 = self.book2.sheetnames
         
-        # make a weak attempt at comparing the same sheets
-        sheet_names1.sort()
-        sheet_names2.sort()
-        
-        # iterate over sheets
-        for sht1nm,sht2nm in zip(sheet_names1,sheet_names2):
-            sht1 = self.book1[sht1nm]
-            sht2 = self.book2[sht2nm]
+        # compare all sheets to every other sheet - find max comparison
+        for sht1nm in sheet_names1:
+            nsame = 0
+            ntotal = 0
             
-            # iterate over cells, ignoring empty cells
-            sheet1 = [[cell.value for cell in row 
+            for sht2nm in sheet_names2:
+                sht1 = self.book1[sht1nm]
+                sht2 = self.book2[sht2nm]
+                
+                # iterate over cells, ignoring empty cells
+                sheet1 = [[cell.value for cell in row 
                                         if type(cell.value) is not type(None)] 
                                         for row in sht1.rows]
-            sheet2 = [[cell.value for cell in row 
+                sheet2 = [[cell.value for cell in row 
                                         if type(cell.value) is not type(None)] 
                                         for row in sht2.rows]
-            
-            # compare cells for which there is identical content
-            for row1,row2 in zip(sheet1,sheet2):
-                for cell1,cell2 in zip(row1,row2):    
-                    if cell1 == cell2: nsame += 1
-                    ntotal += 1
                 
+                # compare cells for which there is identical content
+                for row1,row2 in zip(sheet1,sheet2):
+                    for cell1,cell2 in zip(row1,row2):    
+                        if cell1 == cell2: nsame += 1
+                        ntotal += 1
+        
+                # get similarity
+                try:
+                    sim = float(nsame)/ntotal
+                except ZeroDivisionError:
+                    sim = np.nan
+                    
+                same.append(nsame)
+                total.append(ntotal)
+                sim_frac.append(sim)
+            
+        # get stats for sheets with closest comparison        
+        tag = np.argsort(sim_frac)
+        same = np.array(same)[tag]
+        total = np.array(total)[tag]
+        sim_frac = np.array(sim_frac)[tag]
+                
+        nsame = same[0]
+        ntotal = total[0]
+        sim = sim_frac[0]
+            
         # print results
         if do_print:
             print("Shared range cell content exact match: %d/%d (%.2f" % \
-                        (nsame,ntotal,float(nsame)/ntotal*100) + "%)")
+                        (nsame,ntotal,sim*100) + "%)")
         
         # set to self
         self.results['nsame_xct'] = nsame
         self.results['ntotal_xct'] = ntotal
-        self.results['sim_exact'] = np.around(float(nsame)/ntotal,4)
+        self.results['sim_exact'] = np.around(sim,4)
         
         return (nsame,ntotal)
         
@@ -174,45 +206,67 @@ class comparer(object):
         """
         
         # track statistics
-        nsame = 0
-        ntotal = 0
+        same = []
+        total = []
+        sim_frac = []
         
         # get sheet names 
         sheet_names1 = self.book1.sheetnames
         sheet_names2 = self.book2.sheetnames
         
-        # make a weak attempt at comparing the same sheets
-        sheet_names1.sort()
-        sheet_names2.sort()
-        
-        # iterate over sheets
-        for sht1nm,sht2nm in zip(sheet_names1,sheet_names2):
-            sht1 = self.book1[sht1nm]
-            sht2 = self.book2[sht2nm]
+        # compare all sheets to every other sheet - find max comparison
+        for sht1nm in sheet_names1:
+            nsame = 0
+            ntotal = 0
             
-            # iterate over cells, ignoring empty cells
-            sheet1 = [[cell.value for cell in row] for row in sht1.rows]
-            sheet2 = [[cell.value for cell in row] for row in sht2.rows]
-            
-            # compare cells for which there is identical content
-            for row1,row2 in zip(sheet1,sheet2):
-                for cell1,cell2 in zip(row1,row2):    
+            for sht2nm in sheet_names2:
+                sht1 = self.book1[sht1nm]
+                sht2 = self.book2[sht2nm]
+                
+                # iterate over cells
+                sheet1 = [[cell.value for cell in row] for row in sht1.rows]
+                sheet2 = [[cell.value for cell in row] for row in sht2.rows]
+                
+                # compare cells for which there is identical content
+                for row1,row2 in zip(sheet1,sheet2):
+                    for cell1,cell2 in zip(row1,row2):    
+                        # either both filled or both not filled
+                        if (    type(cell1) != type(None)   and \
+                                type(cell2) != type(None)  )or  \
+                           (    type(cell1) == type(None)   and \
+                                type(cell2) == type(None)  ): 
+                            nsame += 1
+                        ntotal += 1
+                
+                # get similarity
+                try:
+                    sim = float(nsame)/ntotal
+                except ZeroDivisionError:
+                    sim = np.nan
                     
-                    # either both filled or both not filled
-                    if (type(cell1) != type(None) and type(cell2) != type(None))\
-                    or (type(cell1) == type(None) and type(cell2) == type(None)): 
-                        nsame += 1
-                    ntotal += 1
+                same.append(nsame)
+                total.append(ntotal)
+                sim_frac.append(sim)
+        
+        # get stats for sheets with closest comparison        
+        tag = np.argsort(sim_frac)
+        same = np.array(same)[tag]
+        total = np.array(total)[tag]
+        sim_frac = np.array(sim_frac)[tag]
+                
+        nsame = same[0]
+        ntotal = total[0]
+        sim = sim_frac[0]
                 
         # print results
         if do_print:
-            print("Shared range cell content geography match: %d/%d (%.2f" % \
-                        (nsame,ntotal,float(nsame)/ntotal*100) + "%)")
+            print("Most similar shared range cell content geography match: %d/%d (%.2f" % \
+                        (nsame,ntotal,sim*100) + "%)")
         
         # set to self
         self.results['nsame_geo'] = nsame
         self.results['ntotal_geo'] = ntotal
-        self.results['sim_geo'] = np.around(float(nsame)/ntotal,4)
+        self.results['sim_geo'] = np.around(sim,4)
         
         return (nsame,ntotal)
         
@@ -260,6 +314,10 @@ class comparer(object):
                 string: exahaustive search for same strings (non-formulae)
                 geo: compare filled/unfilled cell geography
         """
+        
+        # print
+        if do_print:
+            print("Comparing %s and %s" % (self.file1,self.file2))
         
         # get options
         options = options.split(',')
