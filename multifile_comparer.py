@@ -8,6 +8,59 @@ import os,glob
 
 from comparer import comparer
 
+# table header explanation 
+explanation=\
+"""
+Table headers are as follows:
+
+file1, file2: 
+
+    name and path of files to compare. 
+
+create_time: 
+
+    True if file creation times are identical. 
+    False otherwise. 
+    
+modify_time: 
+
+    True if time of last file modification are identical. 
+    False otherwise. 
+        
+nexcess_str:
+
+    Difference in the number of non-formula strings (strings which don't 
+    start with '=')
+    
+sim_exact:
+
+    Similarity of cell values. 
+        1. Remove all empty cells. 
+        2. Compare sheets row by row. Count the number of cells which 
+           are exact matches. 
+        3. sim = nsame/ntotal. 
+        4. Repeat for all combinations of sheets between the two files. 
+        5. Report the value for the two most similar sheets. 
+        
+sim_geo:
+
+    Similarity of cell geography. 
+        1. Compare sheets row by row. Count the number intances in which
+           cells are either both filled, or both empty.
+        3. sim = nsame/ntotal. 
+        4. Repeat for all combinations of sheets between the two files. 
+        5. Report the value for the two most similar sheets. 
+    
+sim_str:
+
+    Similarity of non-formula strings.
+        1. Get list of cell values which are strings and do not have '='
+           as the first character. Fetch from all sheets.
+        2. Do an exhaustive comparison between the two lists. Count 
+           number of strings which are identical. 
+        3. sim = nsame/ntotal. 
+"""
+
 # ========================================================================== #
 class multifile_comparer(object):
     """
@@ -209,4 +262,5 @@ class multifile_comparer(object):
             print(s)
         else:
             with open(filename,'a+') as fid:
-                fid.write(s)
+                fid.write(s)        
+
