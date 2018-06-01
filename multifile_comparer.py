@@ -171,8 +171,16 @@ class multifile_comparer(object):
                             s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
                     
                     elif "sim" in k:
-                        if float(value) > self.cell_sim_thresh[0]:
-                            if float(value) > self.cell_sim_thresh[1]:
+                        
+                        # reformat as percentage
+                        v = float(value)
+                        value = '%d' % (int(np.round(float(value)*100))) 
+                        value += '%'
+                        s1 = value.ljust(keys_columns_size[k])
+                        
+                        # set color
+                        if v > self.cell_sim_thresh[0]:
+                            if v > self.cell_sim_thresh[1]:
                                 s1 = self.colors['FAIL']+s1+self.colors['ENDC']
                             else:
                                 s1 = self.colors['WARNING']+s1+self.colors['ENDC']
