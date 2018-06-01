@@ -6,38 +6,6 @@
 import multifile_comparer
 import os, argparse
 
-# set help message
-help_message = \
-"""
-    SPREADSHEET COMPARER ======================================
-    
-    Compare spreadsheets pairwise and flag similar spreadsheets. 
-    .xlsx and xls files only. 
-    
-    -----------------------------------------------------------
-    
-    Usage: compare_spreadsheets [options]
-    
-    Options:
-        -d, --dir=PATH
-                evaluate spreadsheets found at PATH
-    
-        -h, --help
-                print this message
-                
-        -l, --log=FILENAME
-                write printout to file (no syntax highlighting)
-        
-        -o, --options=OPTIONS
-                comma-separated list of items to compare (default: all)
-                    meta:   file meta data, create and modification times.
-                    exact:  cell value comparison
-                    string: non-formula string comparison
-                    geo:    layout comparison
-                
-"""
-
-
 # run if main
 if __name__ == '__main__':
     
