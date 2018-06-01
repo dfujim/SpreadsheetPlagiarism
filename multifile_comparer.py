@@ -33,18 +33,26 @@ class multifile_comparer(object):
         May 2018 
     """
 
-    # some colours
-    colors={'HEADER':'\033[95m',
-            'OKBLUE':'\033[94m',
-            'OKGREEN':'\033[92m',
-            'WARNING':'\033[93m',
-            'FAIL':'\033[91m',
+    # define colours: http://ascii-table.com/ansi-escape-sequences.php
+    colors={'PURPLE':'\033[95m',
+            'BLUE':'\033[94m',
+            'GREEN':'\033[92m',
+            'YELLOW':'\033[93m',
+            'RED':'\033[91m',
             'ENDC':'\033[0m',
             'BOLD':'\033[1m',
-            'UNDERLINE':'\033[4m'}
+            'UNDERLINE':'\033[4m',
+            'RED_HIGH':'\033[37;41m'}
             
     # thresholds for cell similarity (warning,fail)
-    cell_sim_thresh = (0.5,0.8)
+    thresh = {  'exact':(0.3,0.5),
+                'geo':  (0.7,0.85),
+                'str':  (0.5,0.8)}
+
+    # set print colors
+    colors['OK'] = colors['BLUE']
+    colors['FAIL'] = colors['RED_HIGH']
+    colors['WARNING'] = colors['YELLOW']
 
     # list of good extensions
     extensions = ('.xlsx','.xls')
@@ -97,6 +105,7 @@ class multifile_comparer(object):
         
         for c in self.comparers:
             c.compare(options=options,do_print=do_print)
+            if do_print:    print('')
         
     # ====================================================================== #
     def print_table(self,filename=''):
@@ -162,13 +171,13 @@ class multifile_comparer(object):
                         s1 = self.colors['FAIL']+s1+self.colors['ENDC']
                     
                     elif value == "False":
-                        s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
+                        s1 = self.colors['OK']+s1+self.colors['ENDC']
                     
                     elif 'nexcess' in k: 
                         if float(value) == 0:
                             s1 = self.colors['WARNING']+s1+self.colors['ENDC']
                         else:
-                            s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
+                            s1 = self.colors['OK']+s1+self.colors['ENDC']
                     
                     elif "sim" in k:
                         
@@ -178,14 +187,20 @@ class multifile_comparer(object):
                         value += '%'
                         s1 = value.ljust(keys_columns_size[k])
                         
+                        # get threshold values
+                        for key in self.thresh.keys():
+                            if key in k:
+                                thresh = self.thresh[key]
+                                break
+                        
                         # set color
-                        if v > self.cell_sim_thresh[0]:
-                            if v > self.cell_sim_thresh[1]:
+                        if v > thresh[0]:
+                            if v > thresh[1]:
                                 s1 = self.colors['FAIL']+s1+self.colors['ENDC']
                             else:
                                 s1 = self.colors['WARNING']+s1+self.colors['ENDC']
                         else:
-                            s1 = self.colors['OKGREEN']+s1+self.colors['ENDC']
+                            s1 = self.colors['OK']+s1+self.colors['ENDC']
                 s += s1
             s += '\n'
             
