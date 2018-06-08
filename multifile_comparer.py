@@ -5,7 +5,9 @@
 import openpyxl
 import numpy as np
 import os,glob
-
+from datetime import datetime
+from openpyxl.styles import Font, Color, PatternFill
+from openpyxl.utils import get_column_letter
 from comparer import comparer
 
 # table header explanation 
@@ -107,8 +109,17 @@ class multifile_comparer(object):
     colors['FAIL'] = colors['RED_HIGH']
     colors['WARNING'] = colors['YELLOW']
 
+    # set cell colors
+    cell_colors = { 'OK':PatternFill(start_color='66FF66',end_color='66FF66',fill_type='solid'),
+                    'FAIL':PatternFill(start_color='FF5050',end_color='FF5050',fill_type='solid'),
+                    'WARNING':PatternFill(start_color='FFFF00',end_color='FFFF00',fill_type='solid')}
+
+
     # list of good extensions
     extensions = ('.xlsx','.xls')
+    
+    # being silly - modify when we reach year 2100
+    century = 2000
 
     # ====================================================================== #
     def __init__(self,filelist):
@@ -264,3 +275,128 @@ class multifile_comparer(object):
             with open(filename,'a+') as fid:
                 fid.write(s)        
 
+    # ====================================================================== #
+    def print_spreadsheet(self,filename=''):
+        """
+            Print results as a formatted .xlsx spreadsheet. 
+            
+            if filename='' default to yymmdd_sheetcmpr.xlsx
+        """
+        
+        # get filename
+        date = datetime.now()
+        if filename == '':
+            filename = 'sheetcmpr_%02d%02d%02d.xlsx' % (date.year-self.century,
+                                                        date.month,date.day)
+        else:
+            s = os.path.splitext(filename)
+            s[1] = '.xlsx'
+            filename = s[0]+s[1]
+        
+        # if file exits read, else make new
+        if os.path.isfile(filename):
+            book = openpyxl.load_workbook(filename=filename)
+        else:
+            book = openpyxl.Workbook()
+            del book['Sheet']    
+        
+        # make sheet
+        sht = book.create_sheet('%02d%02d%02d' % (date.hour,date.minute,date.second))
+        
+        # file names
+        file1 = [c.file1 + " " for c in self.comparers]
+        file2 = [c.file2 + " " for c in self.comparers]
+        
+        # get columns: keys
+        keys_columns = {}
+        for c in self.comparers:
+            for k in c.results.keys():
+                try: 
+                    keys_columns[k].append(str(c.results[k]))
+                except KeyError:
+                    keys_columns[k] = [str(c.results[k])]
+        colkeys = list(keys_columns.keys())
+        colkeys.sort()
+        
+        # write headers
+        sht.cell(row=1,column=1,value='file1')
+        sht.cell(row=1,column=2,value='file2')
+        c = 3
+        for k in colkeys:  
+        
+            # don't print ntotal or nsame
+            if 'ntotal' in k or 'nsame' in k : continue  
+            
+            # write
+            sht.cell(row=1,column=c,value=k)
+            c += 1
+    
+        # write data
+        r = 2
+        for i in range(len(self.comparers)):
+            
+            # filenames
+            sht.cell(row=r,column=1,value=file1[i])
+            sht.cell(row=r,column=2,value=file2[i])
+            
+            # column number reset
+            c = 3
+            
+            for k in colkeys:
+                
+                # don't print ntotal or nsame
+                if 'ntotal' in k or 'nsame' in k : continue  
+                    
+                # get value 
+                value = keys_columns[k][i]
+                
+                # put in cell
+                cell = sht.cell(row=r,column=c,value=value)
+                
+                # format cell
+                if value == "True":
+                    cell.fill = self.cell_colors['FAIL']
+                elif value == "False":
+                    cell.fill = self.cell_colors['OK']
+                
+                elif 'nexcess' in k: 
+                    if float(value) == 0:
+                        cell.fill = self.cell_colors['WARNING']
+                    else:
+                        cell.fill = self.cell_colors['OK']
+                
+                elif "sim" in k:
+                    
+                    # reformat as percentage
+                    v = float(value)
+                    value = '%d' % (int(np.round(float(value)*100))) 
+                    value += '%'
+                    cell = sht.cell(row=r,column=c,value=value)
+                    
+                    # get threshold values
+                    for key in self.thresh.keys():
+                        if key in k:
+                            thresh = self.thresh[key]
+                            break
+                    
+                    # set color
+                    if v > thresh[0]:
+                        if v > thresh[1]:
+                            cell.fill = self.cell_colors['FAIL']
+                        else:
+                            cell.fill = self.cell_colors['WARNING']
+                    else:
+                        cell.fill = self.cell_colors['OK']
+                c += 1
+            r += 1
+                    
+        # adjust column sizes
+        for i,_ in enumerate(sht.columns): 
+            sht.column_dimensions[get_column_letter(i+1)].auto_size = True
+                    
+        # set active sheet and write
+        shtnames = list(map(int,book.sheetnames))
+        maxsht = max(shtnames)
+        book.active = shtnames.index(maxsht)
+        book.save(filename)
+        return book

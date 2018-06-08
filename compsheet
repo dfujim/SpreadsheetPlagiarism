@@ -11,20 +11,34 @@ if __name__ == '__main__':
     
     # set up argument parser
     parser = argparse.ArgumentParser()
-    
-    # log
-    parser.add_argument("-l", "--log",
-                        help='write printout to file',
-                        dest='logfile',
-                        action='store',
-                        default='')
-    
+
     # directory
     parser.add_argument("-d", "--dir",
                         help='evaluate spreadsheets found on path',
                         dest='path',
                         action='store',
                         default='.')
+
+    # dry-run don't save spreadsheet
+    parser.add_argument("-D", "--dry",
+                        help="Dry run, don't write to speadsheet",
+                        dest='dry',
+                        action='store_true',
+                        default=False)
+
+    # explain headers
+    parser.add_argument("--explain",
+                        help='Print calculation methodology of table values',
+                        dest='explain',
+                        action='store_true',
+                        default=False)
+
+    # log
+    parser.add_argument("-l", "--log",
+                        help='write print out table to text file',
+                        dest='logfile',
+                        action='store',
+                        default='')
     
     # options
     opt_help="comma-separated list of items to compare "+\
@@ -43,12 +57,19 @@ if __name__ == '__main__':
                         action='store_true',
                         default=False)
     
-    # explain headers
-    parser.add_argument("--explain",
-                        help='Print calculation methodology of table values',
-                        dest='explain',
+    # quiet mode
+    parser.add_argument("-q", "--quiet",
+                        help='No print output to stdout',
+                        dest='quiet',
                         action='store_true',
                         default=False)
+    
+    # save as spreadsheet
+    parser.add_argument("-s", "--save",
+                        help='write printout to xlsx file',
+                        dest='savefile',
+                        action='store',
+                        default='')
     
     # parse
     args = parser.parse_args()
@@ -61,4 +82,9 @@ if __name__ == '__main__':
     else:
         c = multifile_comparer.multifile_comparer(args.path)
         c.compare(options=args.options,do_print=args.print)
-        c.print_table(filename=args.logfile)
+        
+        if not args.quiet:
+            c.print_table(filename=args.logfile)
+            
+        if not args.dry:
+            c.print_spreadsheet(filename=args.savefile)
