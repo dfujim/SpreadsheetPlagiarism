@@ -313,7 +313,7 @@ class multifile_comparer(object):
         if self.header_sht_name not in book.sheetnames:
             header_sht = book.create_sheet(self.header_sht_name)
             header_sht.cell(row=1,column=1,value=explanation)
-            header_sht.column_dimensions['A'].width = 60
+            header_sht.column_dimensions['A'].width = 70
             header_sht.row_dimensions[1].height = 560
         
         # make sheet
