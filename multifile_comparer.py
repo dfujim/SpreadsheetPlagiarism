@@ -39,7 +39,7 @@ sim_exact:
         1. Remove all empty cells. 
         2. Compare sheets row by row. Count the number of cells which 
            are exact matches. 
-        3. sim = nsame/ntotal. 
+        3. sim = nsame/ntotal (ntotal is the number of cells in a share range).
         4. Repeat for all combinations of sheets between the two files. 
         5. Report the value for the two most similar sheets. 
         
@@ -48,7 +48,7 @@ sim_geo:
     Similarity of cell geography. 
         1. Compare sheets row by row. Count the number intances in which
            cells are either both filled, or both empty.
-        3. sim = nsame/ntotal. 
+        3. sim = 2*nsame/ntotal (ntotal is the number of cells in both sheets). 
         4. Repeat for all combinations of sheets between the two files. 
         5. Report the value for the two most similar sheets. 
     
