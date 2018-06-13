@@ -20,18 +20,30 @@ File types must be xlsx or xls.
 ## Manual
 
 ```
-usage: compsheet [-h] [-l LOGFILE] [-d PATH] [-o OPTIONS] [-p] [--explain]
+fuji@Turin:~/Documents/UBC/Teaching/SQILabs/plagiarism_detection$ ./compsheet -h
+usage: compsheet [-h] [-d] [--explain] [-l LOGFILE] [-o OPTIONS] [-p] [-q]
+                 [-s SAVEFILE]
+                 PATH
+
+Run a pairwise comparison of all spreadsheets on target PATH. Look for pairs
+with common features indicative of plagiarism.
+
+positional arguments:
+  PATH                  evaluate spreadsheets found on PATH
 
 optional arguments:
   -h, --help            show this help message and exit
+  -d, --dry             Dry run, don't write to speadsheet
+  --explain             Print calculation methodology of table values
   -l LOGFILE, --log LOGFILE
-                        write printout to file
-  -d PATH, --dir PATH   evaluate spreadsheets found on path
+                        write print out table to text file
   -o OPTIONS, --options OPTIONS
                         comma-separated list of items to compare (default:
                         'meta,exact,string,geo')
   -p, --print           Print full summary of each comparison
-  --explain             Print calculation methodology of table values
+  -q, --quiet           No print output to stdout
+  -s SAVEFILE, --save SAVEFILE
+                        write printout to xlsx file
 ```
 
 Run `compsheet` from command line in terminal. 
