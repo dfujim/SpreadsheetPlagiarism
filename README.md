@@ -15,7 +15,7 @@ Look for instances of plagiarism.
 
 ## Restrictions
 
-File types must be xlsx or xls. 
+File types must be xlsx. 
 
 ## Manual
 
