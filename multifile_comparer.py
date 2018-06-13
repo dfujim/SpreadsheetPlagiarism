@@ -160,6 +160,8 @@ class multifile_comparer(object):
         # discard all files with bad extensions
         self.filelist = [f for f in filelist 
                            if os.path.splitext(f)[1] in self.extensions]  
+        
+        self.filelist.sort()
                            
         # check for empty directory
         if len(self.filelist) < 2:
