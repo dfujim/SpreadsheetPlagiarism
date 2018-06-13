@@ -29,6 +29,9 @@ class comparer(object):
         May 2018 
     """
 
+    nsame_threshold = 10    # min number of elements in sim comparison
+                            # unless no elements survive the cut
+
     # ====================================================================== #
     def __init__(self,file1,file2):
         """
@@ -169,15 +172,7 @@ class comparer(object):
                 total.append(ntotal)
                 sim_frac.append(sim)
             
-        # get stats for sheets with closest comparison        
-        tag = np.argsort(sim_frac)
-        same = np.array(same)[tag]
-        total = np.array(total)[tag]
-        sim_frac = np.array(sim_frac)[tag]
-                
-        nsame = same[0]
-        ntotal = total[0]
-        sim = sim_frac[0]
+        nsame,ntotal,sim = self.get_sim(same,total,sim_frac)
             
         # print results
         if do_print:
@@ -190,7 +185,7 @@ class comparer(object):
         self.results['sim_exact'] = np.around(sim,4)
         
         return (nsame,ntotal)
-        
+    
     # ====================================================================== #
     def cmpr_geo(self,do_print=False):
         """
@@ -249,16 +244,8 @@ class comparer(object):
                 same.append(nsame)
                 total.append(ntotal)
                 sim_frac.append(sim)
-        
-        # get stats for sheets with closest comparison        
-        tag = np.argsort(sim_frac)
-        same = np.array(same)[tag]
-        total = np.array(total)[tag]
-        sim_frac = np.array(sim_frac)[tag]
-                
-        nsame = same[0]
-        ntotal = total[0]
-        sim = sim_frac[0]
+
+        nsame,ntotal,sim = self.get_sim(same,total,sim_frac)
                 
         # print results
         if do_print:
@@ -336,6 +323,46 @@ class comparer(object):
             
         if 'geo' in options:
             self.cmpr_geo(do_print=do_print)
+    
+    # ====================================================================== #
+    def get_sim(self,same,total,sim_frac):
+        """
+            Sort and apply thresholds: get nsame, ntotal, and sim
+            
+            Threshold applied only if there are entries left afterwards.
+            
+            Inputs: 
+                same: list of values counting number of same elements
+                total: list of values counting total number of elements
+                sim: list of values with same/total
+                
+            For use in cmpr_geo and cmpr_exact_values
+        """
+        
+        # make numpy arrays
+        same = np.array(same)
+        total = np.array(total)
+        sim_frac = np.array(sim_frac)
+        
+        # discard elements with not enough same entries
+        tag = same > self.nsame_threshold
+        
+        if np.sum(tag) > 0:
+            same = same[tag]
+            total = total[tag]
+            sim_frac = sim_frac[tag]
+        
+        # get stats for sheets with closest comparison        
+        tag = np.argsort(sim_frac)
+        same = same[tag]
+        total = total[tag]
+        sim_frac = sim_frac[tag]
+        
+        nsame = same[0]
+        ntotal = total[0]
+        sim = sim_frac[0]
+        
+        return (nsame,ntotal,sim)
                 
 # ========================================================================== #
 class result_dict(dict):
