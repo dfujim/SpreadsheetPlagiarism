@@ -10,17 +10,17 @@ import os, argparse
 if __name__ == '__main__':
     
     # set up argument parser
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Run a pairwise comparison '+\
+        'of all spreadsheets on target PATH. Look for pairs with common'+\
+        ' features indicative of plagiarism.')
 
     # directory
-    parser.add_argument("-d", "--dir",
-                        help='evaluate spreadsheets found on path',
-                        dest='path',
-                        action='store',
-                        default='.')
+    parser.add_argument("PATH",
+                        help='evaluate spreadsheets found on PATH',
+                        action='store')
 
     # dry-run don't save spreadsheet
-    parser.add_argument("-D", "--dry",
+    parser.add_argument("-d", "--dry",
                         help="Dry run, don't write to speadsheet",
                         dest='dry',
                         action='store_true',
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         print(multifile_comparer.explanation)
     
     else:
-        c = multifile_comparer.multifile_comparer(args.path)
+        c = multifile_comparer.multifile_comparer(args.PATH)
         c.compare(options=args.options,do_print=args.print)
         
         if not args.quiet:
