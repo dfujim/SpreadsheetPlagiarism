@@ -115,7 +115,7 @@ class multifile_comparer(object):
 
 
     # list of good extensions
-    extensions = ('.xlsx')
+    extensions = ('.xlsx',)
     
     # being silly - modify when we reach year 2100
     century = 2000
