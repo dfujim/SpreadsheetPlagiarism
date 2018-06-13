@@ -85,14 +85,15 @@ class comparer(object):
         nexcess = abs(len(str1)-len(str2))
             
         # number of comparable elements
-        ntotal = min(len(str1),len(str2))
+        ntotal = min((len(str1),len(str2)))
                 
         # compare string contents 1 -- 2
         nsame = 0
-        for s in str1:
+        for s in str1:        
             if s in str2:
                 nsame += 1
-           
+                str2.remove(s)
+            
         # get similarity
         try:
             sim = float(nsame)/ntotal
@@ -138,10 +139,9 @@ class comparer(object):
         
         # compare all sheets to every other sheet - find max comparison
         for sht1nm in sheet_names1:
-            nsame = 0
-            ntotal = 0
-            
             for sht2nm in sheet_names2:
+                nsame = 0
+                ntotal = 0
                 sht1 = self.book1[sht1nm]
                 sht2 = self.book2[sht2nm]
                 
@@ -198,7 +198,7 @@ class comparer(object):
             
             Output: 
                 nsame: number of cells which are identical by coordinate. 
-                ntotal: number of cells total which are in a shared range. 
+                ntotal: number of cells total. 
                         
             Sets to results: 
                 nsame, ntotal: as described above
@@ -216,10 +216,9 @@ class comparer(object):
         
         # compare all sheets to every other sheet - find max comparison
         for sht1nm in sheet_names1:
-            nsame = 0
-            ntotal = 0
-            
             for sht2nm in sheet_names2:
+                nsame = 0
+                ntotal = 0
                 sht1 = self.book1[sht1nm]
                 sht2 = self.book2[sht2nm]
                 
@@ -235,8 +234,11 @@ class comparer(object):
                                 type(cell2) != type(None)  )or  \
                            (    type(cell1) == type(None)   and \
                                 type(cell2) == type(None)  ): 
-                            nsame += 1
-                        ntotal += 1
+                            nsame += 2
+                
+                # get number of cells
+                ntotal += np.sum(np.fromiter(map(len,sheet1),dtype=int))
+                ntotal += np.sum(np.fromiter(map(len,sheet2),dtype=int))
                 
                 # get similarity
                 try:
