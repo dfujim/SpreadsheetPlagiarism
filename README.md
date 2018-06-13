@@ -20,7 +20,6 @@ File types must be xlsx or xls.
 ## Manual
 
 ```
-fuji@Turin:~/Documents/UBC/Teaching/SQILabs/plagiarism_detection$ ./compsheet -h
 usage: compsheet [-h] [-d] [--explain] [-l LOGFILE] [-o OPTIONS] [-p] [-q]
                  [-s SAVEFILE]
                  PATH
