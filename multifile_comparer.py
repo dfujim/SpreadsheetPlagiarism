@@ -12,8 +12,7 @@ from comparer import comparer
 
 # table header explanation 
 explanation=\
-"""
-Table headers are as follows:
+"""Table headers are as follows:
 
 file1, file2: 
 
@@ -116,11 +115,14 @@ class multifile_comparer(object):
 
 
     # list of good extensions
-    extensions = ('.xlsx','.xls')
+    extensions = ('.xlsx')
     
     # being silly - modify when we reach year 2100
     century = 2000
 
+    # name of header explanation sheet
+    header_sht_name = 'Header Explanation'
+    
     # ====================================================================== #
     def __init__(self,filelist):
         """
@@ -158,6 +160,10 @@ class multifile_comparer(object):
         # discard all files with bad extensions
         self.filelist = [f for f in filelist 
                            if os.path.splitext(f)[1] in self.extensions]  
+                           
+        # check for empty directory
+        if len(self.filelist) < 2:
+            raise RuntimeError("Not enough files in directory.")
 
     # ====================================================================== #
     def compare(self,options='meta,exact,string,geo',do_print=False):
@@ -300,6 +306,14 @@ class multifile_comparer(object):
             book = openpyxl.Workbook()
             del book['Sheet']    
         
+        
+        # make sheet for explaination 
+        if self.header_sht_name not in book.sheetnames:
+            header_sht = book.create_sheet(self.header_sht_name)
+            header_sht.cell(row=1,column=1,value=explanation)
+            header_sht.column_dimensions['A'].width = 60
+            header_sht.row_dimensions[1].height = 560
+        
         # make sheet
         sht = book.create_sheet('%02d%02d%02d' % (date.hour,date.minute,date.second))
         
@@ -395,8 +409,13 @@ class multifile_comparer(object):
             sht.column_dimensions[get_column_letter(i+1)].auto_size = True
                     
         # set active sheet and write
-        shtnames = list(map(int,book.sheetnames))
+        shtnames = []
+        for sname in book.sheetnames:
+            try:
+                shtnames.append(int(sname))
+            except ValueError:
+                pass
         maxsht = max(shtnames)
-        book.active = shtnames.index(maxsht)
+        book.active = shtnames.index(maxsht)+1
         book.save(filename)
         return book
