@@ -1,8 +1,15 @@
-###!/opt/anaconda3/bin/python3    # use this for phas servers
-#!/usr/bin/python3          # use this for general usage 
+#!/usr/bin/python3
 # Compare all spreadsheets in directory to each other
 # Derek Fujimoto
 # June 2018
+
+# line 1 alternate options
+#       use this for phas servers:
+#       #!/opt/anaconda3/bin/python3    
+#
+#       use this for general usage:        
+#       #!/usr/bin/python3
+
 
 import multifile_comparer
 import os, argparse
