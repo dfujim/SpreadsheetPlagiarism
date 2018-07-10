@@ -19,7 +19,29 @@ File types must be xlsx.
 
 ## Manual
 
+### Setup
+
+1. Make sure the python executable location is correct. Open the `compsheet` file with your favourite text editor and modify the first line to be either `#!/opt/anaconda3/bin/python3` for phas servers or `#!/usr/bin/python3` for general usage.
+
+2. Make compsheet easily executable from anywhere on your system. Open `~/.bashrc` in an text editor and add an alias for compsheet: append the line `alias compsheet='/path_to_file/compsheet'` to the bottom of the file. 
+
+3. Re-source your file. Run the command `source .bashrc` from your home directory. 
+
+### Usage
+
+Some examples:
+
+```bash
+compsheet -h            # show help message
+compsheet               # compare all files in current directory
+compsheet ./dirname     # compare all files in directory 'dirname'
+compsheet -d ./dirname  # do a dry run: write no files. 
+compsheet --explain     # print description of table headers00
 ```
+
+Manual: 
+
+```text
 usage: compsheet [-h] [-d] [--explain] [-l LOGFILE] [-o OPTIONS] [-p] [-q]
                  [-s SAVEFILE]
                  PATH
