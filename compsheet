@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+###!/opt/anaconda3/bin/python3    # use this for phas servers
+#!/usr/bin/python3          # use this for general usage 
 # Compare all spreadsheets in directory to each other
 # Derek Fujimoto
 # June 2018
@@ -17,7 +18,9 @@ if __name__ == '__main__':
     # directory
     parser.add_argument("PATH",
                         help='evaluate spreadsheets found on PATH',
-                        action='store')
+                        action='store',
+                        default='.',
+                        nargs="?")
 
     # dry-run don't save spreadsheet
     parser.add_argument("-d", "--dry",
