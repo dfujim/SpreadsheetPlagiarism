@@ -17,7 +17,7 @@ Spreadsheet files must be of type `.xlsx`
 
 ## Automatic Setup (for unix beginners)
 
-The setup script is a little inelegant, but it should do the job. Here is how to put the file on the phas server (if you are not logged in directly on a machine in Henn203, then you can run this remotely), and run the script from linux or mac machines. 
+The setup script is a little inelegant, but it should do the job. If you are not logged in directly on a machine in Henn203, then this tutorial will walk you through how to send the file to the phas server and run the script remotely. If you are on a linux machine in Henn203, then skip steps 3 and 4. The tutorial will also show you how to run the script from linux or mac machines. 
 
 1. Download the installation script
 
@@ -39,8 +39,50 @@ The setup script is a little inelegant, but it should do the job. Here is how to
    ssh username@ssh.phas.ubc.ca
    ```
    Now when you enter commands into the terminal, they are run on the phas server. 
+
+5. Here are some basic commands you can use to move the installation script into the directory you want to install into: 
+
+   ```bash
+      ls                # "list":                     print all contents of current directory.
+      cd path           # "change directory":         move into the location specified by "path"
+      mv item1 item2    # "move":                     rename item1 to item2, or if a path is included, move item1 to the position item2. 
+      mkdir dirname     # "make directory":           make a new directory with name "dirname"
+      pwd               # "print working directory":  show where you are in the file system
+   ```
    
-5. Run the installation script. Type the following and press enter: 
+   Check out [this tutorial](https://maker.pro/linux/tutorial/basic-linux-commands-for-beginners) for more commands, but for now here are some examples of the above: 
+   
+   ```bash
+      # make a new directory
+      mkdir test_dir
+   
+      # move into the new directory 
+      cd test_dir
+   
+      # move up one level
+      cd ..
+      
+      # rename directory
+      mv test_dir test2
+      
+      # make a new directory inside the renamed one
+      mkdir test2/test_sub
+      
+      # move right into that sub directory
+      cd test2/test_sub
+      
+      # go up two levels
+      cd ../..
+      
+      # let's say we have a file named file.txt inside the test2 directory.
+      # we can get the file and move it to where we are (note the period)
+      mv test2/file.txt .
+      
+      # we can then put it into the sub folder we made
+      mv file.txt test2/test_sub
+   ```
+
+6. Run the installation script. Type the following and press enter: 
 
    ```bash
    bash install_compsheet.bash
