@@ -5,6 +5,11 @@
 # Clone files 
 git clone https://github.com/dfujim/SpreadsheetPlagiarism.git
 
+# Set python executable location
+var='#!'`type -a python3 | sed -n 1p | awk '{print $NF}'`
+echo "Python executable found: "$var
+sed -i '1 i '$var ./SpreadsheetPlagiarism/compsheet
+
 # Check for dependencies
 pip install openpyxl --user
 pip install numpy --user
@@ -16,6 +21,7 @@ then
     then
         echo "Adding compsheet alias to .bash_aliases"
         echo 'alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet' >> $HOME/.bash_aliases
+        echo "Run 'source $HOME/.bashrc' to finish installation."
     else
         echo "compsheet alias found in .bash_aliases. Doing nothing."
     fi
@@ -24,10 +30,8 @@ else
     then
         echo "Adding compsheet alias to .bashrc"
         echo 'alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet' >> $HOME/.bashrc
+        echo "Run 'source $HOME/.bashrc' to finish installation."
     else
         echo "compsheet alias found in .bashrc. Doing nothing."
     fi
 fi
-
-# final message
-echo "Run 'source $HOME/.bashrc' to finish installation."
