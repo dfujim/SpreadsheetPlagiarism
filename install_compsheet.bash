@@ -21,7 +21,7 @@ then
     then
         echo "Adding compsheet alias to .bash_aliases"
         echo 'alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet' >> $HOME/.bash_aliases
-        echo "Run 'source $HOME/.bashrc' to finish installation."
+        echo "Run 'source ~/.bashrc' to finish installation."
     else
         echo "compsheet alias found in .bash_aliases. Doing nothing."
     fi
@@ -30,7 +30,7 @@ else
     then
         echo "Adding compsheet alias to .bashrc"
         echo 'alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet' >> $HOME/.bashrc
-        echo "Run 'source $HOME/.bashrc' to finish installation."
+        echo "Run 'source ~/.bashrc' to finish installation."
     else
         echo "compsheet alias found in .bashrc. Doing nothing."
     fi
