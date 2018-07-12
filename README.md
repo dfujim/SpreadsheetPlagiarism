@@ -15,7 +15,7 @@ Spreadsheet files must be of type `.xlsx`
 
 # Installation
 
-## Automatic Setup (for beginners)
+## Automatic Setup (for unix beginners)
 
 The setup script is a little inelegant, but it should do the job. Here is how to put the file on the phas server (if you are not logged in directly on a machine in Henn203, then you can run this remotely), and run the script from linux or mac machines. 
 
@@ -85,7 +85,7 @@ compsheet -h            # show help message
 compsheet               # compare all files in current directory
 compsheet ./dirname     # compare all files in directory 'dirname'
 compsheet -d ./dirname  # do a dry run: write no files. 
-compsheet --explain     # print description of table headers00
+compsheet --explain     # print description of table headers
 ```
 
 ## Help Message: 
