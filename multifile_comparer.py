@@ -406,9 +406,10 @@ class multifile_comparer(object):
                 c += 1
             r += 1
                     
-        # adjust column sizes
+        # adjust column sizes, prevent hiding
         for i,_ in enumerate(sht.columns): 
             sht.column_dimensions[get_column_letter(i+1)].auto_size = True
+            sht.column_dimensions[get_column_letter(i+1)].hidden = False
                     
         # set active sheet and write
         shtnames = []
