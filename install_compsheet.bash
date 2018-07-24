@@ -20,7 +20,7 @@ then
     if [ `grep -F "alias compsheet" $HOME/.bash_aliases | wc -l` == 0 ] 
     then
         echo "Adding compsheet alias to .bash_aliases"
-        echo 'alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet' >> $HOME/.bash_aliases
+        echo "alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet" >> $HOME/.bash_aliases
         echo "Run 'source ~/.bashrc' to finish installation."
     else
         echo "compsheet alias found in .bash_aliases. Doing nothing."
@@ -29,7 +29,7 @@ else
     if [ `grep -F "alias compsheet" $HOME/.bashrc | wc -l` == 0 ] 
     then
         echo "Adding compsheet alias to .bashrc"
-        echo 'alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet' >> $HOME/.bashrc
+        echo "alias compsheet=${PWD}/SpreadsheetPlagiarism/compsheet" >> $HOME/.bashrc
         echo "Run 'source ~/.bashrc' to finish installation."
     else
         echo "compsheet alias found in .bashrc. Doing nothing."
