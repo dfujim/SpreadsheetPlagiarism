@@ -188,11 +188,11 @@ class multifile_comparer(object):
         """
         
         # get column: file1 names
-        file1 = [c.file1 + " " for c in self.comparers]
+        file1 = [os.path.basename(c.file1) + " " for c in self.comparers]
         file1_size = max(map(len,file1))
             
         # get column: file2 names
-        file2 = [c.file2 + " " for c in self.comparers]
+        file2 = [os.path.basename(c.file2) + " " for c in self.comparers]
         file2_size = max(map(len,file2))    
     
         # get columns: keys
@@ -319,10 +319,6 @@ class multifile_comparer(object):
         # make sheet
         sht = book.create_sheet('%02d%02d%02d' % (date.hour,date.minute,date.second))
         
-        # file names
-        file1 = [c.file1 + " " for c in self.comparers]
-        file2 = [c.file2 + " " for c in self.comparers]
-        
         # get columns: keys
         keys_columns = {}
         for c in self.comparers:
@@ -349,11 +345,24 @@ class multifile_comparer(object):
     
         # write data
         r = 2
-        for i in range(len(self.comparers)):
+        for i,cmpr in enumerate(self.comparers):
+            
+            # get variables
+            file1 = os.path.basename(cmpr.file1)
+            file2 = os.path.basename(cmpr.file2)
+            
+            sht1 = cmpr.book1.active.title
+            sht2 = cmpr.book2.active.title
+            
+            path1 = os.path.abspath(cmpr.file1).strip()
+            path2 = os.path.abspath(cmpr.file2).strip()
             
             # filenames
-            sht.cell(row=r,column=1,value=file1[i])
-            sht.cell(row=r,column=2,value=file2[i])
+            sht.cell(row=r,column=1).hyperlink = ("%s#%s" % (path1,sht1))
+            sht.cell(row=r,column=1).value = file1
+            
+            sht.cell(row=r,column=2).hyperlink = ("%s#%s" % (path2,sht2))
+            sht.cell(row=r,column=2).value = file2
             
             # column number reset
             c = 3
