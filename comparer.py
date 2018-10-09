@@ -41,12 +41,6 @@ class comparer(object):
         self.file1 = file1
         self.file2 = file2
         
-        # open books, ignore warnings raised by unsupported formatting
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.book1 = openpyxl.load_workbook(file1)
-            self.book2 = openpyxl.load_workbook(file2)
-        
         # results
         self.results = result_dict()
         
@@ -304,6 +298,9 @@ class comparer(object):
                 geo: compare filled/unfilled cell geography
         """
         
+        # load files
+        self.load()
+        
         # print
         if do_print:
             print("Comparing %s and %s" % (self.file1,self.file2))
@@ -323,6 +320,9 @@ class comparer(object):
             
         if 'geo' in options:
             self.cmpr_geo(do_print=do_print)
+    
+        # close files 
+        self.unload()
     
     # ====================================================================== #
     def get_sim(self,same,total,sim_frac):
@@ -363,7 +363,27 @@ class comparer(object):
         sim = sim_frac[0]
         
         return (nsame,ntotal,sim)
-                
+ 
+    # ====================================================================== #
+    def load(self):
+        """Read file"""
+        
+        if not hasattr(self,'book1'):
+            # open books, ignore warnings raised by unsupported formatting
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                self.book1 = openpyxl.load_workbook(self.file1)
+                self.book2 = openpyxl.load_workbook(self.file2)
+        
+    # ====================================================================== #
+    def unload(self):
+        """Delete data"""
+        try:
+            del self.book1
+            del self.book2
+        except AttributeError:
+            pass
+
 # ========================================================================== #
 class result_dict(dict):
     """
