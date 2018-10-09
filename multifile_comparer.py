@@ -394,9 +394,8 @@ class multifile_comparer(object):
                     
                     # reformat as percentage
                     v = float(value)
-                    value = '%d' % (int(np.round(float(value)*100))) 
-                    value += '%'
-                    cell = sht.cell(row=r,column=c,value=value)
+                    cell = sht.cell(row=r,column=c,value=v)
+                    cell.number_format = '0.%'
                     
                     # get threshold values
                     for key in self.thresh.keys():
