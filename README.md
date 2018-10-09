@@ -133,7 +133,7 @@ compsheet --explain     # print description of table headers
 ## Help Message: 
 
 ```text
-usage: compsheet [-h] [-d] [--explain] [-l LOGFILE] [-o OPTIONS] [-p] [-q] [-s SAVEFILE] [PATH]
+usage: compsheet [-h] [-d] [--explain] [-l LOGFILE] [-o OPTIONS] [-p] [-q] [-s SAVEFILE] [-n NPROC] [PATH]
 
 Run a pairwise comparison of all spreadsheets on target PATH. Look for pairs with common features indicative of plagiarism.
 
@@ -156,4 +156,6 @@ optional arguments:
   -q, --quiet                    No print output to stdout
   
   -s SAVEFILE, --save SAVEFILE   Write printout to xlsx file SAVEFILE
+  
+  -n NPROC, --nproc NPROC        Choose number of processors
 ```
