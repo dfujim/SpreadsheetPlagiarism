@@ -419,6 +419,10 @@ class multifile_comparer(object):
             sht.column_dimensions[get_column_letter(i+1)].auto_size = True
             sht.column_dimensions[get_column_letter(i+1)].hidden = False
                     
+        # add sorting instructions 
+        sht.auto_filter.add_sort_condition("B2:B99")
+        sht.auto_filter.add_sort_condition("C2:C99")
+        
         # set active sheet and write
         shtnames = []
         for sname in book.sheetnames:
