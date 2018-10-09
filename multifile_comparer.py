@@ -357,10 +357,8 @@ class multifile_comparer(object):
             file1 = os.path.basename(cmpr.file1)
             file2 = os.path.basename(cmpr.file2)
             
-            cmpr.load()
-            sht1 = cmpr.book1.active.title
-            sht2 = cmpr.book2.active.title
-            cmpr.unload()
+            sht1 = cmpr.sht1
+            sht2 = cmpr.sht2
             
             path1 = os.path.abspath(cmpr.file1).strip()
             path2 = os.path.abspath(cmpr.file2).strip()
@@ -441,3 +439,4 @@ class multifile_comparer(object):
         book.active = shtnames.index(maxsht)+1
         book.save(filename)
         return book
+

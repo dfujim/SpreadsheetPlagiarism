@@ -301,6 +301,10 @@ class comparer(object):
         # load files
         self.load()
         
+        # get name of active sheet
+        self.sht1 = self.book1.active.title
+        self.sht2 = self.book2.active.title
+        
         # print
         if do_print:
             print("Comparing %s and %s" % (self.file1,self.file2))
