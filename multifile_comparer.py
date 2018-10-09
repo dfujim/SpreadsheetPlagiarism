@@ -214,8 +214,8 @@ class multifile_comparer(object):
         
         for k in colkeys:  
         
-            # don't print ntotal or nsame
-            if 'ntotal' in k or 'nsame' in k : continue  
+            # don't print ntotal or nsame or score
+            if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
             
             # add to list
             s += k.ljust(keys_columns_size[k])
@@ -229,8 +229,8 @@ class multifile_comparer(object):
             s += file1[i].ljust(file1_size) + file2[i].ljust(file2_size)
             for k in colkeys:
                 
-                # don't print ntotal or nsame
-                if 'ntotal' in k or 'nsame' in k : continue  
+                # don't print ntotal or nsame or score
+                if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
                     
                 # get value 
                 value = keys_columns[k][i]
@@ -330,14 +330,18 @@ class multifile_comparer(object):
         colkeys = list(keys_columns.keys())
         colkeys.sort()
         
+        # get scores and sort
+        scores = [cmpr.results['score'] for cmpr in self.comparers]
+        srt_tag = np.argsort(scores)[::-1]
+        
         # write headers
         sht.cell(row=1,column=1,value='file1')
         sht.cell(row=1,column=2,value='file2')
         c = 3
         for k in colkeys:  
         
-            # don't print ntotal or nsame
-            if 'ntotal' in k or 'nsame' in k : continue  
+            # don't print ntotal or nsame or score
+            if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
             
             # write
             sht.cell(row=1,column=c,value=k)
@@ -345,7 +349,9 @@ class multifile_comparer(object):
     
         # write data
         r = 2
-        for i,cmpr in enumerate(self.comparers):
+        for i in srt_tag:
+            
+            cmpr = self.comparers[i]
             
             # get variables
             file1 = os.path.basename(cmpr.file1)
@@ -371,8 +377,8 @@ class multifile_comparer(object):
             
             for k in colkeys:
                 
-                # don't print ntotal or nsame
-                if 'ntotal' in k or 'nsame' in k : continue  
+                # don't print ntotal or nsame or score
+                if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
                     
                 # get value 
                 value = keys_columns[k][i]

@@ -321,6 +321,8 @@ class comparer(object):
         if 'geo' in options:
             self.cmpr_geo(do_print=do_print)
     
+        self.make_compare_score()
+        
         # close files 
         self.unload()
     
@@ -364,6 +366,49 @@ class comparer(object):
         
         return (nsame,ntotal,sim)
  
+    # ====================================================================== #
+    def make_compare_score(self):
+        """
+            Make an integer allowing us to rank spreadsheets. Most important 
+            factor to least, with the score are
+                factor                  score
+                create_time             += 1e6 if True
+                modify_time             += 1e5 if True
+                sim_exact               += 1e4*factor
+                sim_string              += 1e2*factor
+                sim_geo                 += factor
+        """
+    
+        score = 0
+        
+        try:
+            if self.results['create_time']: score += 1e6
+        except KeyError:    
+            pass
+        
+        try:
+            if self.results['modify_time']: score += 1e5
+        except KeyError:
+            pass
+        
+        try:
+            score += self.results['sim_exact']*1e4
+        except KeyError:    
+            pass
+        
+        try:
+            score += self.results['sim_str']*1e2
+        except KeyError:    
+            pass
+        
+        try:
+            score += self.results['sim_geo']
+        except KeyError:    
+            pass
+        
+        self.results['score'] = score
+        return score
+    
     # ====================================================================== #
     def load(self):
         """Read file"""
