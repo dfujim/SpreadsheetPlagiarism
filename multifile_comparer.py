@@ -9,6 +9,8 @@ from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill
 from openpyxl.utils import get_column_letter
 from comparer import comparer
+from multiprocessing import Pool
+from functools import partial
 
 # table header explanation 
 explanation=\
@@ -69,10 +71,11 @@ class multifile_comparer(object):
         given similarities.
         
         Usage:
-            construct: c = multifile_comparer(filelist)
+            construct: c = multifile_comparer(filelist,nproc=1)
                 filelist: list of filenames, 
                             OR string of directory name to fetch all contents, 
                             OR wildcard string of filenme format.
+                nproc: number of processors to use
             compare: c.compare()
             show results: c.print_table([filename])
                 print to stdout if filename missing
@@ -124,11 +127,14 @@ class multifile_comparer(object):
     header_sht_name = 'Header Explanation'
     
     # ====================================================================== #
-    def __init__(self,filelist):
+    def __init__(self,filelist,nproc=1):
         """
             filelist: list of filenames, OR string of directory to fetch all 
                       files, or wildcard string of file format. 
         """
+        
+        # save number of processors
+        self.nproc = nproc
         
         # save filelist
         if type(filelist) == str:
@@ -175,9 +181,17 @@ class multifile_comparer(object):
             Options: same as comparer.compare
         """
         
-        for c in self.comparers:
-            c.compare(options=options,do_print=do_print)
-            if do_print:    print('')
+        if self.nproc > 1:
+            cm = partial(do_compare,options=options,do_print=do_print)
+            p = Pool(self.nproc)
+            try:
+                self.comparers = list(p.imap_unordered(cm,self.comparers))
+            finally:
+                p.close()
+        else:
+            for c in self.comparers:
+                c.compare(options=options,do_print=do_print)
+                if do_print:    print('')
         
     # ====================================================================== #
     def print_table(self,filename=''):
@@ -439,4 +453,10 @@ class multifile_comparer(object):
         book.active = shtnames.index(maxsht)+1
         book.save(filename)
         return book
+
+# ========================================================================== #
+def do_compare(c,options,do_print):
+    c.compare(options=options,do_print=do_print)
+    if do_print:    print('')
+    return c
 

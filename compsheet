@@ -80,6 +80,13 @@ if __name__ == '__main__':
                         dest='savefile',
                         action='store',
                         default='')
+
+    # number of processors
+    parser.add_argument("-n", "--nproc",
+                        help='choose number of processors',
+                        dest='nproc',
+                        action='store',
+                        default=1)
     
     # parse
     args = parser.parse_args()
@@ -90,7 +97,7 @@ if __name__ == '__main__':
         print(multifile_comparer.explanation)
     
     else:
-        c = multifile_comparer.multifile_comparer(args.PATH)
+        c = multifile_comparer.multifile_comparer(args.PATH,int(args.nproc))
         c.compare(options=args.options,do_print=args.print)
         
         if not args.quiet:
