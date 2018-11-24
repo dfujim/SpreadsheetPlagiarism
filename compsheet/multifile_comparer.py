@@ -1,6 +1,6 @@
 # Object for comparing a list of Microsoft Excel Spreadsheets with extension .xlsx
 # Derek Fujimoto
-# May 2018
+# Nov 2018
 
 import openpyxl
 import numpy as np

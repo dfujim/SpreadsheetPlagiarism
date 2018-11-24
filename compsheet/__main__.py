@@ -1,6 +1,6 @@
 # Compare all spreadsheets in directory to each other
 # Derek Fujimoto
-# June 2018
+# Nov 2018
 
 import compsheet.multifile_comparer as mc
 import os, argparse
