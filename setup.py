@@ -19,6 +19,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: Linux",
     ),
-    install_requires=['openpyxl>=2.5'],
+    install_requires=['openpyxl>=2.5','numpy>=1.15'],
 )
 
