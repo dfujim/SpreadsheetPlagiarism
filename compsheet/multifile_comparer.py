@@ -8,7 +8,7 @@ import os,glob
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill
 from openpyxl.utils import get_column_letter
-from comparer import comparer
+from compsheet.comparer import comparer
 from multiprocessing import Pool
 from functools import partial
 

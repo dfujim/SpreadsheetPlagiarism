@@ -1,17 +1,8 @@
-#!/usr/bin/python3
 # Compare all spreadsheets in directory to each other
 # Derek Fujimoto
 # June 2018
 
-# line 1 alternate options
-#       use this for phas servers:
-#       #!/opt/anaconda3/bin/python3    
-#
-#       use this for general usage:        
-#       #!/usr/bin/python3
-
-
-import multifile_comparer
+import compsheet.multifile_comparer as mc
 import os, argparse
 
 # run if main
@@ -101,10 +92,10 @@ if __name__ == '__main__':
     # -----------------------------------------------------------------------
     # Set up and run comparison
     if args.explain:
-        print(multifile_comparer.explanation)
+        print(mc.explanation)
     
     else:
-        c = multifile_comparer.multifile_comparer(args.PATH,int(args.nproc))
+        c = mc.multifile_comparer(args.PATH,int(args.nproc))
         c.compare(options=args.options,do_print=args.full,do_verbose=args.verbose)
         
         if args.table:
