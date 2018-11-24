@@ -275,6 +275,20 @@ class comparer(object):
         # compare create time
         create = prop1.created == prop2.created
         
+        # compare creators
+        creator_name = (prop1.creator == prop2.creator) and \
+                type(prop1.creator) != type(None) and \
+                'User' not in prop1.creator and \
+                'Windows' not in prop1.creator and \
+                'openpyxl' not in prop1.creator
+        
+        # compare last modified by
+        modified_name = (prop1.lastModifiedBy == prop2.lastModifiedBy) and \
+                type(prop1.lastModifiedBy) != type(None) and \
+                'User' not in prop1.lastModifiedBy and \
+                'Windows' not in prop1.lastModifiedBy and \
+                'openpyxl' not in prop1.lastModifiedBy 
+        
         # print results
         if do_print:
             print('Sheet modification time is identical: %s' % str(mod))
@@ -283,8 +297,10 @@ class comparer(object):
         # set to self
         self.results['modify_time'] = mod
         self.results['create_time'] = create
+        self.results['create_name'] = creator_name
+        self.results['modify_name'] = modified_name
         
-        return (mod,create)
+        return (mod,create,creator_name,modified_name)
 
     # ====================================================================== #
     def compare(self,options='meta,exact,string,geo',do_print=False):
@@ -386,13 +402,23 @@ class comparer(object):
         score = 0
         
         try:
-            if self.results['create_time']: score += 1e6
+            if self.results['create_time']: score += 1e8
         except KeyError:    
             pass
         
         try:
-            if self.results['modify_time']: score += 1e5
+            if self.results['modify_time']: score += 1e7
         except KeyError:
+            pass
+        
+        try:
+            score += self.results['create_name']*1e6
+        except KeyError:    
+            pass
+            
+        try:
+            score += self.results['modify_name']*1e5
+        except KeyError:    
             pass
         
         try:
@@ -406,7 +432,7 @@ class comparer(object):
             pass
         
         try:
-            score += self.results['sim_geo']
+            score += self.results['sim_geo']*1e1
         except KeyError:    
             pass
         
@@ -432,7 +458,7 @@ class comparer(object):
             del self.book2
         except AttributeError:
             pass
-
+            
 # ========================================================================== #
 class result_dict(dict):
     """
@@ -477,3 +503,4 @@ class result_dict(dict):
     # ====================================================================== #
     def __dir__(self):
         return list(self.keys())
+

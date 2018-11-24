@@ -52,25 +52,32 @@ if __name__ == '__main__':
     
     # options
     opt_help="comma-separated list of items to compare "+\
-             "(default: 'meta,exact,string,geo')"
+             "(possible: 'meta,exact,string,geo')"
                     
     parser.add_argument("-o", "--options",
                         help=opt_help,
                         dest='options',
                         action='store',
-                        default='meta,exact,string,geo')
+                        default='meta')
     
     # print lines
-    parser.add_argument("-p", "--print",
-                        help='Print full summary of each comparison',
-                        dest='print',
+    parser.add_argument("-f", "--full",
+                        help='Print full detailed summary of each comparison',
+                        dest='full',
                         action='store_true',
                         default=False)
     
-    # quiet mode
-    parser.add_argument("-q", "--quiet",
-                        help='No print output to stdout',
-                        dest='quiet',
+    # print table
+    parser.add_argument("-t", "--table",
+                        help='Print summary table of all comparisons',
+                        dest='table',
+                        action='store_true',
+                        default=False)
+    
+    # verbose mode
+    parser.add_argument("-v", "--verbose",
+                        help='Print output to stdout',
+                        dest='verbose',
                         action='store_true',
                         default=False)
     
@@ -98,9 +105,9 @@ if __name__ == '__main__':
     
     else:
         c = multifile_comparer.multifile_comparer(args.PATH,int(args.nproc))
-        c.compare(options=args.options,do_print=args.print)
+        c.compare(options=args.options,do_print=args.full,do_verbose=args.verbose)
         
-        if not args.quiet:
+        if args.table:
             c.print_table(filename=args.logfile)
             
         if not args.dry:

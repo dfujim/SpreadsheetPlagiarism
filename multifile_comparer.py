@@ -29,6 +29,11 @@ modify_time:
 
     True if time of last file modification are identical. 
     False otherwise. 
+
+create_name and modify_name: 
+
+    True if names of creator or lastModifiedBy are identical. 
+    False otherwise, or if name contains [User,Windows,openpyxl]. 
         
 nexcess_str:
 
@@ -174,25 +179,24 @@ class multifile_comparer(object):
             raise RuntimeError("Not enough files in directory.")
 
     # ====================================================================== #
-    def compare(self,options='meta,exact,string,geo',do_print=False):
+    def compare(self,options='meta,exact,string,geo',do_print=False,do_verbose=False):
         """
             Run comparisons on the paired files
             
             Options: same as comparer.compare
         """
         
+        cm = partial(do_compare,options=options,do_print=do_print,
+                     do_verbose=do_verbose)
         if self.nproc > 1:
-            cm = partial(do_compare,options=options,do_print=do_print)
             p = Pool(self.nproc)
             try:
                 self.comparers = list(p.imap_unordered(cm,self.comparers))
             finally:
                 p.close()
         else:
-            for c in self.comparers:
-                c.compare(options=options,do_print=do_print)
-                if do_print:    print('')
-        
+            self.comparers = list(map(cm,self.comparers))
+            
     # ====================================================================== #
     def print_table(self,filename=''):
         """
@@ -311,7 +315,7 @@ class multifile_comparer(object):
             filename = 'sheetcmpr_%02d%02d%02d.xlsx' % (date.year-self.century,
                                                         date.month,date.day)
         else:
-            s = os.path.splitext(filename)
+            s = list(os.path.splitext(filename))
             s[1] = '.xlsx'
             filename = s[0]+s[1]
         
@@ -328,7 +332,7 @@ class multifile_comparer(object):
             header_sht = book.create_sheet(self.header_sht_name)
             header_sht.cell(row=1,column=1,value=explanation)
             header_sht.column_dimensions['A'].width = 70
-            header_sht.row_dimensions[1].height = 560
+            header_sht.row_dimensions[1].height = 600
         
         # make sheet
         sht = book.create_sheet('%02d%02d%02d' % (date.hour,date.minute,date.second))
@@ -455,8 +459,9 @@ class multifile_comparer(object):
         return book
 
 # ========================================================================== #
-def do_compare(c,options,do_print):
+def do_compare(c,options,do_print,do_verbose):
+    if do_verbose:
+        print(os.path.basename(c.file1),os.path.basename(c.file2))
     c.compare(options=options,do_print=do_print)
     if do_print:    print('')
     return c
-
