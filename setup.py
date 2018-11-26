@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
     
 setuptools.setup(
     name="compsheet",
-    version="1.0.0",
+    version="1.0.1",
     author="Derek Fujimoto",
     author_email="fujimoto@phas.ubc.ca",
     description="compare microsoft spreadsheet data to check for plagiarism",
@@ -17,7 +17,6 @@ setuptools.setup(
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Linux",
     ),
     install_requires=['openpyxl>=2.5','numpy>=1.15'],
 )
