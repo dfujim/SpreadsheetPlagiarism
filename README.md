@@ -2,15 +2,15 @@
 
 Look for instances of plagiarism. 
 
-* Compare file meta data
+* Compare file meta data [default]
     * File creation time stamp
     * File modification time stamp
     * Author of file creation 
     * Author of last modification of file
-* Cell values
+* Cell values [optional]
     * Non-formula strings
     * Cell-by-cell values
-* Cell layout
+* Cell layout [optional]
     * Check locations of filled/unfilled cells
 
 Spreadsheet files must be of type `.xlsx`
@@ -39,13 +39,20 @@ echo "alias compsheet='python3 -m compsheet'" >> .bashrc
 ```
 into the prompt and press enter. 
 
-# Some basic examples of usage:
+# Some examples of usage:
 
 ```bash
+# basic usage
 python3 -m compsheet    # show help message with no alias
-compsheet -h            # show help message
-compsheet               # compare all files in current directory
-compsheet ./dirname     # compare all files in directory 'dirname'
-compsheet -d ./dirname  # do a dry run: write no files. 
+compsheet -h            # show help message with alias set to "compsheet"
 compsheet --explain     # print description of table headers
+compsheet               # compare all files in current directory
+
+# example compbining various switches
+compsheet -v -n 4 -t -o "meta,exact,string" ./dir 
+   # [-v]      verbose output: print names of files as they are compared (default: quiet)
+   # [-n]      use x processors in multiprocessing                       (default: 1)
+   # [-t]      print table summary to stdout                             (default: off)
+   # [-o]      do additional optional comparisons                        (default: "meta")
+   # [./dir]   path to directory                                         (default: ".")
 ```
