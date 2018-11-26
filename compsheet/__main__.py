@@ -3,15 +3,17 @@
 # Nov 2018
 
 import compsheet.multifile_comparer as mc
-import os, argparse
+import os, argparse, sys
+from textwrap import dedent
 
 # run if main
 if __name__ == '__main__':
     
     # set up argument parser
-    parser = argparse.ArgumentParser(description='Run a pairwise comparison '+\
-        'of all spreadsheets on target PATH. Look for pairs with common'+\
-        ' features indicative of plagiarism.')
+    parser = argparse.ArgumentParser(description=dedent("""\
+        Run a pairwise comparison of all spreadsheets on target PATH. 
+        Look for pairs with common features indicative of plagiarism."""),
+        formatter_class=argparse.RawTextHelpFormatter)
 
     # directory
     parser.add_argument("PATH",
@@ -22,28 +24,30 @@ if __name__ == '__main__':
 
     # dry-run don't save spreadsheet
     parser.add_argument("-d", "--dry",
-                        help="Dry run, don't write to speadsheet",
+                        help="dry run, don't write to speadsheet",
                         dest='dry',
                         action='store_true',
                         default=False)
 
     # explain headers
     parser.add_argument("--explain",
-                        help='Print calculation methodology of table values',
+                        help='print calculation details and background info',
                         dest='explain',
                         action='store_true',
                         default=False)
 
     # log
     parser.add_argument("-l", "--log",
-                        help='write print out table to text file',
+                        help='write printout table to text file',
                         dest='logfile',
                         action='store',
                         default='')
     
     # options
-    opt_help="comma-separated list of items to compare "+\
-             "(possible: 'meta,exact,string,geo')"
+    opt_help=dedent("""\
+            comma-separated list of items to compare 
+                possible: [default] meta, [optional] exact, string, geo.
+                example: compsheet -o "meta,exact". """)
                     
     parser.add_argument("-o", "--options",
                         help=opt_help,
@@ -53,35 +57,39 @@ if __name__ == '__main__':
     
     # print lines
     parser.add_argument("-f", "--full",
-                        help='Print full detailed summary of each comparison',
+                        help=dedent("""\
+                            print full detailed summary of each comparison 
+                                (don't use with a large number of comparisons)"""),
                         dest='full',
                         action='store_true',
                         default=False)
     
     # print table
     parser.add_argument("-t", "--table",
-                        help='Print summary table of all comparisons',
+                        help='print summary table of all comparisons',
                         dest='table',
                         action='store_true',
                         default=False)
     
     # verbose mode
     parser.add_argument("-v", "--verbose",
-                        help='Print output to stdout',
+                        help='print progress output to stdout',
                         dest='verbose',
                         action='store_true',
                         default=False)
     
     # save as spreadsheet
     parser.add_argument("-s", "--save",
-                        help='write printout to xlsx file',
+                        help=dedent("""\
+                        write printout to xlsx file of this name
+                            (default: date)"""),
                         dest='savefile',
                         action='store',
                         default='')
 
     # number of processors
     parser.add_argument("-n", "--nproc",
-                        help='choose number of processors',
+                        help='choose number of processors for multiprocessing',
                         dest='nproc',
                         action='store',
                         default=1)
@@ -95,11 +103,17 @@ if __name__ == '__main__':
         print(mc.explanation)
     
     else:
-        c = mc.multifile_comparer(args.PATH,int(args.nproc))
+        try:
+            c = mc.multifile_comparer(args.PATH,int(args.nproc))
+        except IOError as err:
+            print(err)
+            sys.exit()
         c.compare(options=args.options,do_print=args.full,do_verbose=args.verbose)
         
+        # print summary table
         if args.table:
             c.print_table(filename=args.logfile)
             
+        # save spreadsheet unless dry run
         if not args.dry:
             c.print_spreadsheet(filename=args.savefile)
