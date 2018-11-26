@@ -15,6 +15,8 @@ Look for instances of plagiarism.
 
 Spreadsheet files must be of type `.xlsx`
 
+Results are saved to spreadsheet. 
+
 # Installation and Setup
 
 To install run `pip install --user compsheet` from the terminal. 
