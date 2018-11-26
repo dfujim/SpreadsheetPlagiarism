@@ -4,7 +4,7 @@
 
 import openpyxl
 import numpy as np
-import os,glob
+import os,glob,sys
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill
 from openpyxl.utils import get_column_letter
@@ -127,6 +127,9 @@ class multifile_comparer(object):
     
     # being silly - modify when we reach year 2100
     century = 2000
+    
+    # string width for printing columns
+    strwidth = 50
 
     # name of header explanation sheet
     header_sht_name = 'Header Explanation'
@@ -150,7 +153,7 @@ class multifile_comparer(object):
         # build comparer objects
         nfiles = len(self.filelist)
         self.comparers = [comparer(self.filelist[i],self.filelist[j]) 
-                            for i in range(nfiles-1) for j in range(i+1,nfiles)]
+                            for i in range(nfiles-1) for j in range(i+1,nfiles)]                    
 
     # ====================================================================== #
     def set_filelist(self,string):
@@ -176,8 +179,28 @@ class multifile_comparer(object):
                            
         # check for empty directory
         if len(self.filelist) < 2:
-            raise RuntimeError("Not enough files in directory.")
+            raise IOError("Not enough files in directory.")
 
+    # ====================================================================== #
+    def _compare(self,mapfn,compare_fn,do_verbose):
+        """Run comparison command"""
+        
+        sw = self.strwidth
+        ncompare = len(self.comparers)
+        if do_verbose:
+            cmpr = []
+            for i,c in enumerate(mapfn(compare_fn,self.comparers)):
+                print("(%d/%d) %s\t%s" % \
+                        (i+1,ncompare,
+                        os.path.basename(c.file1)[:sw].ljust(sw),
+                        os.path.basename(c.file2)[:sw].ljust(sw)),
+                        end='\r',flush=True)
+                cmpr.append(c)
+            self.comparers = cmpr
+            print("")
+        else:
+            self.comparers = list(mapfn(compare_fn,self.comparers))
+        
     # ====================================================================== #
     def compare(self,options='meta,exact,string,geo',do_print=False,do_verbose=False):
         """
@@ -186,16 +209,15 @@ class multifile_comparer(object):
             Options: same as comparer.compare
         """
         
-        cm = partial(do_compare,options=options,do_print=do_print,
-                     do_verbose=do_verbose)
+        cm = partial(do_compare,options=options,do_print=do_print)
         if self.nproc > 1:
             p = Pool(self.nproc)
             try:
-                self.comparers = list(p.imap_unordered(cm,self.comparers))
+                self._compare(p.imap_unordered,cm,do_verbose)
             finally:
                 p.close()
         else:
-            self.comparers = list(map(cm,self.comparers))
+            self._compare(map,cm,do_verbose)
             
     # ====================================================================== #
     def print_table(self,filename=''):
@@ -459,9 +481,7 @@ class multifile_comparer(object):
         return book
 
 # ========================================================================== #
-def do_compare(c,options,do_print,do_verbose):
-    if do_verbose:
-        print(os.path.basename(c.file1),os.path.basename(c.file2))
+def do_compare(c,options,do_print):
     c.compare(options=options,do_print=do_print)
     if do_print:    print('')
     return c
