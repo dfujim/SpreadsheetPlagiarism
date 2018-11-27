@@ -164,8 +164,7 @@ class multifile_comparer(object):
         
         # check if string is directory: fetch all files there
         if os.path.isdir(string):
-            if string[-1] != '/': string += '/'
-            filelist = glob.glob(string+"*")
+            filelist = glob.glob(os.path.join(string,"*"))
         
         # otherwise get files from wildcard
         else:
@@ -321,7 +320,8 @@ class multifile_comparer(object):
             print(s)
         else:
             with open(filename,'a+') as fid:
-                fid.write(s)        
+                fid.write(s)     
+            print('Table summary written to %s' % filename)
 
     # ====================================================================== #
     def print_spreadsheet(self,filename=''):
@@ -478,6 +478,9 @@ class multifile_comparer(object):
         maxsht = max(shtnames)
         book.active = shtnames.index(maxsht)+1
         book.save(filename)
+        
+        print('Spreadsheet summary written to %s' % filename)
+        
         return book
 
 # ========================================================================== #
