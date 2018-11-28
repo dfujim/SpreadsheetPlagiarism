@@ -4,8 +4,8 @@
 
 import openpyxl
 import numpy as np
-import os,glob
 import warnings
+import itertools 
 
 # ========================================================================== #
 class comparer(object):
@@ -31,6 +31,8 @@ class comparer(object):
 
     nsame_threshold = 10    # min number of elements in sim comparison
                             # unless no elements survive the cut
+    ncells_cmpr = 50        # maximum number of cells to read along row/column
+                            # to compare
 
     # ====================================================================== #
     def __init__(self,file1,file2):
@@ -43,6 +45,21 @@ class comparer(object):
         
         # results
         self.results = result_dict()
+        
+    # ====================================================================== #
+    def _get_str(self,book):
+        """Get all the non-equation strings from all sheets in the workbook."""
+        
+        # function for comparing rows/columns
+        sl = lambda x : itertools.islice(x,self.ncells_cmpr)
+        
+        # get all cell contents discarding non-strings and formulae
+        str1 = []
+        for shtnm in book.sheetnames:
+            sht = book[shtnm]
+            str1.extend([cell.value for row in sl(sht.rows) for cell in sl(row)\
+                         if type(cell.value) is str and cell.value[0] != '='])
+        return str1
         
     # ====================================================================== #
     def cmpr_strings(self,do_print=False):
@@ -60,24 +77,10 @@ class comparer(object):
                 sim_str: nsame/ntotal
         """
         
-        # get sheet names 
-        sheet_names1 = self.book1.sheetnames
-        sheet_names2 = self.book2.sheetnames
+        # get strings from workbooks
+        str1 = self._get_str(self.book1)
+        str2 = self._get_str(self.book2)
         
-        # get all cell contents discarding non-strings and formulae
-        str1 = []
-        for shtnm in sheet_names1:
-            sht = self.book1[shtnm]
-            str1.extend([cell.value for row in sht.rows for cell in row 
-                                    if type(cell.value) is str and
-                                        cell.value[0] != '='])
-        str2 = []
-        for shtnm in sheet_names2:
-            sht = self.book2[shtnm]
-            str2.extend([cell.value for row in sht.rows for cell in row 
-                                    if type(cell.value) is str and
-                                        cell.value[0] != '='])    
-                
         # difference in cell sizes
         nexcess = abs(len(str1)-len(str2))
             
@@ -134,6 +137,9 @@ class comparer(object):
         sheet_names1 = self.book1.sheetnames
         sheet_names2 = self.book2.sheetnames
         
+        # function for comparing rows/columns
+        sl = lambda x : itertools.islice(x,self.ncells_cmpr)
+        
         # compare all sheets to every other sheet - find max comparison
         for sht1nm in sheet_names1:
             for sht2nm in sheet_names2:
@@ -143,12 +149,12 @@ class comparer(object):
                 sht2 = self.book2[sht2nm]
                 
                 # iterate over cells, ignoring empty cells
-                sheet1 = [[cell.value for cell in row 
+                sheet1 = [[cell.value for cell in sl(row) 
                                         if type(cell.value) is not type(None)] 
-                                        for row in sht1.rows]
-                sheet2 = [[cell.value for cell in row 
+                                        for row in sl(sht1.rows)]
+                sheet2 = [[cell.value for cell in sl(row) 
                                         if type(cell.value) is not type(None)] 
-                                        for row in sht2.rows]
+                                        for row in sl(sht2.rows)]
                 
                 # compare cells for which there is identical content
                 for row1,row2 in zip(sheet1,sheet2):
@@ -203,6 +209,9 @@ class comparer(object):
         sheet_names1 = self.book1.sheetnames
         sheet_names2 = self.book2.sheetnames
         
+        # function for comparing rows/columns
+        sl = lambda x : itertools.islice(x,self.ncells_cmpr)
+        
         # compare all sheets to every other sheet - find max comparison
         for sht1nm in sheet_names1:
             for sht2nm in sheet_names2:
@@ -212,8 +221,10 @@ class comparer(object):
                 sht2 = self.book2[sht2nm]
                 
                 # iterate over cells
-                sheet1 = [[cell.value for cell in row] for row in sht1.rows]
-                sheet2 = [[cell.value for cell in row] for row in sht2.rows]
+                sheet1 = [[cell.value for cell in sl(row)] \
+                                      for row  in sl(sht1.rows)]
+                sheet2 = [[cell.value for cell in sl(row)] \
+                                      for row  in sl(sht2.rows)]
                 
                 # compare cells for which there is identical content
                 for row1,row2 in zip(sheet1,sheet2):
