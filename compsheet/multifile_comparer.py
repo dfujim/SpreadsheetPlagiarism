@@ -11,6 +11,7 @@ from openpyxl.utils import get_column_letter
 from compsheet.comparer import comparer
 from multiprocessing import Pool
 from functools import partial
+from tqdm import tqdm
 
 # table header explanation 
 explanation=\
@@ -188,17 +189,16 @@ class multifile_comparer(object):
         ncompare = len(self.comparers)
         if do_verbose:
             cmpr = []
-            for i,c in enumerate(mapfn(compare_fn,self.comparers)):
-                print("\r(%d/%d) %s\t%s" % \
+            for i,c in tqdm(enumerate(mapfn(compare_fn,self.comparers)),total=ncompare):
+                tqdm.write("(%d/%d) %s\t%s" % \
                         (i+1,ncompare,
                         os.path.basename(c.file1)[:sw].ljust(sw),
-                        os.path.basename(c.file2)[:sw].ljust(sw)),
-                        end='',flush=True)
+                        os.path.basename(c.file2)[:sw].ljust(sw)))
                 cmpr.append(c)
             self.comparers = cmpr
-            print("")
         else:
-            self.comparers = list(mapfn(compare_fn,self.comparers))
+            self.comparers = list(tqdm(mapfn(compare_fn,self.comparers),
+                                       total=ncompare))
         
     # ====================================================================== #
     def compare(self,options='meta,exact,string,geo',do_print=False,do_verbose=False):
