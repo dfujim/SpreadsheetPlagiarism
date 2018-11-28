@@ -33,7 +33,9 @@ class comparer(object):
                             # unless no elements survive the cut
     ncells_cmpr = 50        # maximum number of cells to read along row/column
                             # to compare
-
+    
+    all_opt_str = 'meta,exact,string,geo'   # do these if option = 'all'
+    
     # ====================================================================== #
     def __init__(self,file1,file2):
         """
@@ -98,7 +100,7 @@ class comparer(object):
         try:
             sim = float(nsame)/ntotal
         except ZeroDivisionError:
-            sim = np.nan
+            sim = 0
             
         # print results
         if do_print:
@@ -166,7 +168,7 @@ class comparer(object):
                 try:
                     sim = float(nsame)/ntotal
                 except ZeroDivisionError:
-                    sim = np.nan
+                    sim = 0
                     
                 same.append(nsame)
                 total.append(ntotal)
@@ -244,7 +246,7 @@ class comparer(object):
                 try:
                     sim = float(nsame)/ntotal
                 except ZeroDivisionError:
-                    sim = np.nan
+                    sim = 0
                     
                 same.append(nsame)
                 total.append(ntotal)
@@ -323,6 +325,8 @@ class comparer(object):
                 exact: compare non-empty cell values by coordinate
                 string: exahaustive search for same strings (non-formulae)
                 geo: compare filled/unfilled cell geography
+                
+                all: do all of the above
         """
         
         # load files
@@ -337,6 +341,7 @@ class comparer(object):
             print("Comparing %s and %s" % (self.file1,self.file2))
         
         # get options
+        if options.lower() == 'all': options = self.all_opt_str
         options = options.split(',')
         
         # run options
@@ -413,38 +418,38 @@ class comparer(object):
         score = 0
         
         try:
-            if self.results['create_time']: score += 1e8
+            if self.results['create_name']: score += 1e8
         except KeyError:    
             pass
         
         try:
-            if self.results['modify_time']: score += 1e7
-        except KeyError:
-            pass
-        
-        try:
-            score += self.results['create_name']*1e6
+            if self.results['create_time']: score += 1e7
         except KeyError:    
             pass
             
         try:
-            score += self.results['modify_name']*1e5
+            if self.results['modify_name']: score += 1e6
         except KeyError:    
             pass
         
         try:
-            score += self.results['sim_exact']*1e4
+            if self.results['modify_time']: score += 1e5
+        except KeyError:
+            pass
+        
+        try:
+            score += pow(self.results['sim_exact'],3)*2e3
         except KeyError:    
             pass
         
         try:
-            score += self.results['sim_str']*1e2
+            score += pow(self.results['sim_str'],3)*1e3
         except KeyError:    
             pass
         
         try:
-            score += self.results['sim_geo']*1e1
-        except KeyError:    
+            score += pow(self.results['sim_geo'],3)*1e1
+        except KeyError:   
             pass
         
         self.results['score'] = score

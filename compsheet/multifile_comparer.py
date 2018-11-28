@@ -188,7 +188,6 @@ class multifile_comparer(object):
         ncompare = len(self.comparers)
         if do_verbose:
             cmpr = []
-            print("")
             for i,c in enumerate(mapfn(compare_fn,self.comparers)):
                 print("\r(%d/%d) %s\t%s" % \
                         (i+1,ncompare,
@@ -208,7 +207,7 @@ class multifile_comparer(object):
             
             Options: same as comparer.compare
         """
-        
+        print('Running %d comparisons...' % len(self.comparers))
         cm = partial(do_compare,options=options,do_print=do_print)
         if self.nproc > 1:
             p = Pool(self.nproc)
@@ -331,6 +330,9 @@ class multifile_comparer(object):
             
             if filename='' default to yymmdd_sheetcmpr.xlsx
         """
+        
+        # print status
+        print('Starting file write. This may make a few minutes...',end='\r')
         
         # get filename
         date = datetime.now()
@@ -480,7 +482,7 @@ class multifile_comparer(object):
         book.active = shtnames.index(maxsht)+1
         book.save(filename)
         
-        print('Spreadsheet summary written to %s' % filename)
+        print('Spreadsheet summary written to %s' % filename,end=' '*30+'\n')
         
         return book
 
