@@ -17,6 +17,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
     ),
-    install_requires=['openpyxl>=2.5','numpy>=1.15'],
+    install_requires=['openpyxl>=2.5','numpy>=1.15','tqdm>=4.28'],
 )
 
