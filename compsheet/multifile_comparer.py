@@ -107,9 +107,9 @@ class multifile_comparer(object):
             'RED_HIGH':'\033[37;41m'}
             
     # thresholds for cell similarity (warning,fail)
-    thresh = {  'exact':(0.3,0.5),
-                'geo':  (0.7,0.85),
-                'str':  (0.5,0.8)}
+    thresh = {  'exact':(0.7,0.9),
+                'geo':  (0.8,0.9),
+                'str':  (0.7,0.9)}
 
     # set print colors
     colors['OK'] = colors['BLUE']
@@ -188,12 +188,13 @@ class multifile_comparer(object):
         ncompare = len(self.comparers)
         if do_verbose:
             cmpr = []
+            print("")
             for i,c in enumerate(mapfn(compare_fn,self.comparers)):
-                print("(%d/%d) %s\t%s" % \
+                print("\r(%d/%d) %s\t%s" % \
                         (i+1,ncompare,
                         os.path.basename(c.file1)[:sw].ljust(sw),
                         os.path.basename(c.file2)[:sw].ljust(sw)),
-                        end='\r',flush=True)
+                        end='',flush=True)
                 cmpr.append(c)
             self.comparers = cmpr
             print("")
