@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # options
     opt_help=dedent("""\
             comma-separated list of items to compare 
-                possible: [default] meta, [optional] exact, string, geo.
+                possible: [default] meta, [optional] exact, string, geo, all.
                 example: compsheet -o "meta,exact". """)
                     
     parser.add_argument("-o", "--options",
