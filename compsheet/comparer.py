@@ -420,7 +420,9 @@ class comparer(object):
         score = 0
         
         try:
-            if self.results['create_name']: score += 1e8
+            if self.results['create_name']: 
+                if type(self.results['create_name']) == bool:   score += 1e8
+                else:                                           score += 0.5e8
         except KeyError:    
             pass
         
@@ -430,27 +432,29 @@ class comparer(object):
             pass
             
         try:
-            if self.results['modify_name']: score += 1e6
+            if self.results['modify_name']: 
+                if type(self.results['modify_name']) == bool:   score += 1e5
+                else:                                           score += 0.5e5
         except KeyError:    
             pass
         
         try:
-            if self.results['modify_time']: score += 1e5
+            if self.results['modify_time']: score += 1e4
         except KeyError:
             pass
         
         try:
-            score += pow(self.results['sim_exact'],3)*2e3
+            score += pow(self.results['sim_exact'],3)*2e2
         except KeyError:    
             pass
         
         try:
-            score += pow(self.results['sim_str'],3)*1e3
+            score += pow(self.results['sim_str'],3)*1e2
         except KeyError:    
             pass
         
         try:
-            score += pow(self.results['sim_geo'],3)*1e1
+            score += pow(self.results['sim_geo'],3)*1e0
         except KeyError:   
             pass
         
