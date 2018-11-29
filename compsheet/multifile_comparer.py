@@ -70,6 +70,9 @@ sim_str:
         3. sim = nsame/ntotal. 
 """
 
+# limit the number of lines to write out to file
+cmpr_disp_limit = 1000
+
 # ========================================================================== #
 class multifile_comparer(object):
     """
@@ -324,11 +327,13 @@ class multifile_comparer(object):
             print('Table summary written to %s' % filename)
 
     # ====================================================================== #
-    def print_spreadsheet(self,filename=''):
+    def print_spreadsheet(self,filename='',limit_output=False):
         """
             Print results as a formatted .xlsx spreadsheet. 
             
             if filename='' default to yymmdd_sheetcmpr.xlsx
+            limit_output: if true, limit the number of lines of output to 
+                          cmpr_disp_limit
         """
         
         # print status
@@ -376,6 +381,7 @@ class multifile_comparer(object):
         # get scores and sort
         scores = [cmpr.results['score'] for cmpr in self.comparers]
         srt_tag = np.argsort(scores)[::-1]
+        if limit_output: srt_tag = srt_tag[:cmpr_disp_limit]
         
         # write headers
         sht.cell(row=1,column=1,value='file1')
