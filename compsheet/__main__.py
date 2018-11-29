@@ -22,6 +22,14 @@ if __name__ == '__main__':
                         default='.',
                         nargs="?")
 
+    # save all comparisons
+    parser.add_argument("-a", "--all",
+                        help="write all comparisons to file (default: %d)"%\
+                                    mc.cmpr_disp_limit,
+                        dest='all',
+                        action='store_true',
+                        default=False)
+
     # dry-run don't save spreadsheet
     parser.add_argument("-d", "--dry",
                         help="dry run, don't write to speadsheet",
@@ -36,12 +44,28 @@ if __name__ == '__main__':
                         action='store_true',
                         default=False)
 
+    # print lines
+    parser.add_argument("-f", "--full",
+                        help=dedent("""\
+                            print full detailed summary of each comparison 
+                                (don't use with a large number of comparisons)"""),
+                        dest='full',
+                        action='store_true',
+                        default=False)
+
     # log
     parser.add_argument("-l", "--log",
                         help='write printout table to text file',
                         dest='logfile',
                         action='store',
                         default='')
+    
+    # number of processors
+    parser.add_argument("-n", "--nproc",
+                        help='choose number of processors for multiprocessing',
+                        dest='nproc',
+                        action='store',
+                        default=1)
     
     # options
     opt_help=dedent("""\
@@ -55,15 +79,15 @@ if __name__ == '__main__':
                         action='store',
                         default='meta')
     
-    # print lines
-    parser.add_argument("-f", "--full",
+    # save as spreadsheet
+    parser.add_argument("-s", "--save",
                         help=dedent("""\
-                            print full detailed summary of each comparison 
-                                (don't use with a large number of comparisons)"""),
-                        dest='full',
-                        action='store_true',
-                        default=False)
-    
+                        write printout to xlsx file of this name
+                            (default: date)"""),
+                        dest='savefile',
+                        action='store',
+                        default='')
+                        
     # print table
     parser.add_argument("-t", "--table",
                         help='print summary table of all comparisons',
@@ -77,22 +101,6 @@ if __name__ == '__main__':
                         dest='verbose',
                         action='store_true',
                         default=False)
-    
-    # save as spreadsheet
-    parser.add_argument("-s", "--save",
-                        help=dedent("""\
-                        write printout to xlsx file of this name
-                            (default: date)"""),
-                        dest='savefile',
-                        action='store',
-                        default='')
-
-    # number of processors
-    parser.add_argument("-n", "--nproc",
-                        help='choose number of processors for multiprocessing',
-                        dest='nproc',
-                        action='store',
-                        default=1)
     
     # parse
     args = parser.parse_args()
@@ -116,4 +124,4 @@ if __name__ == '__main__':
             
         # save spreadsheet unless dry run
         if not args.dry:
-            c.print_spreadsheet(filename=args.savefile)
+            c.print_spreadsheet(filename=args.savefile,limit_output=not args.all)
