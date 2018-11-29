@@ -360,7 +360,6 @@ class multifile_comparer(object):
             book = openpyxl.Workbook()
             del book['Sheet']    
         
-        
         # make sheet for explaination 
         if self.header_sht_name not in book.sheetnames:
             header_sht = book.create_sheet(self.header_sht_name)
@@ -481,9 +480,10 @@ class multifile_comparer(object):
                     
         # adjust column sizes, prevent hiding
         for i,_ in enumerate(sht.columns): 
-            sht.column_dimensions[get_column_letter(i+1)].auto_size = True
+            sht.column_dimensions[get_column_letter(i+1)].auto_size = False
             sht.column_dimensions[get_column_letter(i+1)].hidden = False
-                    
+        sht.sheet_format.defaultColWidth = 15
+        
         # freeze first row
         sht.freeze_panes = sht['A2']
 
