@@ -430,8 +430,12 @@ class multifile_comparer(object):
                 # format cell
                 if value == "True":
                     cell.fill = self.cell_colors['FAIL']
+                
                 elif value == "False":
                     cell.fill = self.cell_colors['OK']
+                
+                elif value == "Unclear":
+                    cell.fill = self.cell_colors['WARNING']
                 
                 elif 'nexcess' in k: 
                     if float(value) == 0:

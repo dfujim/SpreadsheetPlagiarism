@@ -64,6 +64,25 @@ class comparer(object):
         return str1
         
     # ====================================================================== #
+    def _cmpr_names(self,name1,name2):
+        """Compare names.
+        
+            Return: 1 if same
+                    0.5 if same, but names are program defaults
+                    0 if different
+        """
+        
+        namebool = name1 == name2
+        
+        if namebool and (type(name1) == type(None) or \
+                        'User' in name1 or \
+                        'Windows' in name1 or \
+                        'openpyxl' in name1): 
+            namebool = 'Unclear'
+        
+        return namebool
+    
+    # ====================================================================== #
     def cmpr_strings(self,do_print=False):
         """
             Compare all non-formulae, non numeric entries.
@@ -288,19 +307,9 @@ class comparer(object):
         # compare create time
         create = prop1.created == prop2.created
         
-        # compare creators
-        creator_name = (prop1.creator == prop2.creator) and \
-                type(prop1.creator) != type(None) and \
-                'User' not in prop1.creator and \
-                'Windows' not in prop1.creator and \
-                'openpyxl' not in prop1.creator
-        
-        # compare last modified by
-        modified_name = (prop1.lastModifiedBy == prop2.lastModifiedBy) and \
-                type(prop1.lastModifiedBy) != type(None) and \
-                'User' not in prop1.lastModifiedBy and \
-                'Windows' not in prop1.lastModifiedBy and \
-                'openpyxl' not in prop1.lastModifiedBy 
+        # compare author names
+        creator_name = self._cmpr_names(prop1.creator,prop2.creator)
+        modified_name = self._cmpr_names(prop1.lastModifiedBy,prop2.lastModifiedBy)
         
         # print results
         if do_print:
@@ -405,14 +414,7 @@ class comparer(object):
     # ====================================================================== #
     def make_compare_score(self):
         """
-            Make an integer allowing us to rank spreadsheets. Most important 
-            factor to least, with the score are
-                factor                  score
-                create_time             += 1e6 if True
-                modify_time             += 1e5 if True
-                sim_exact               += 1e4*factor
-                sim_string              += 1e2*factor
-                sim_geo                 += factor
+            Make an integer allowing us to rank spreadsheets.
         """
     
         score = 0
