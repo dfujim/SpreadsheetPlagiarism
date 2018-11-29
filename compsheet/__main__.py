@@ -119,7 +119,7 @@ if __name__ == '__main__':
         c.compare(options=args.options,do_print=args.full,do_verbose=args.verbose)
         
         # print summary table
-        if args.table:
+        if args.table or args.logfile != '':
             c.print_table(filename=args.logfile)
             
         # save spreadsheet unless dry run
