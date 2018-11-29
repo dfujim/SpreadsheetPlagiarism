@@ -4,7 +4,8 @@
 
 import openpyxl
 import numpy as np
-import os,glob,sys
+import os,glob,sys,re
+from pathlib import Path
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill
 from openpyxl.utils import get_column_letter
@@ -339,11 +340,14 @@ class multifile_comparer(object):
         # print status
         print('Starting file write. This may make a few minutes...',end='\r')
         
+        # get directory
+        dirname = os.path.dirname(str(Path(self.filelist[0]).resolve()))
+        dirname = re.sub('/|\\\\','',dirname.replace(os.path.dirname(dirname),''))
+        
         # get filename
         date = datetime.now()
         if filename == '':
-            filename = 'sheetcmpr_%02d%02d%02d.xlsx' % (date.year-self.century,
-                                                        date.month,date.day)
+            filename = 'compsheet_%s.xlsx' % dirname
         else:
             s = list(os.path.splitext(filename))
             s[1] = '.xlsx'
@@ -365,7 +369,9 @@ class multifile_comparer(object):
             header_sht.row_dimensions[1].height = 600
         
         # make sheet
-        sht = book.create_sheet('%02d%02d%02d' % (date.hour,date.minute,date.second))
+        sht = book.create_sheet('%02d-%02d-%02d (%02d-%02d-%02d)' % \
+                (date.year-self.century,date.month,date.day,
+                 date.hour,date.minute,date.second))
         
         # get columns: keys
         keys_columns = {}
@@ -485,7 +491,7 @@ class multifile_comparer(object):
         shtnames = []
         for sname in book.sheetnames:
             try:
-                shtnames.append(int(sname))
+                shtnames.append(float(re.sub('-|\(|\)','',sname).replace(' ','.')))
             except ValueError:
                 pass
         maxsht = max(shtnames)
