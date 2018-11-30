@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # directory
     parser.add_argument("PATH",
-                        help='evaluate spreadsheets found on PATH',
+                        help='compare spreadsheets found on PATH',
                         action='store',
                         default='.',
                         nargs="?")
