@@ -6,6 +6,7 @@ import openpyxl
 import numpy as np
 import warnings
 import itertools 
+import zipfile
 
 # ========================================================================== #
 class comparer(object):
@@ -466,11 +467,20 @@ class comparer(object):
         """Read file"""
         
         if not hasattr(self,'book1'):
+            
             # open books, ignore warnings raised by unsupported formatting
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                self.book1 = openpyxl.load_workbook(self.file1)
-                self.book2 = openpyxl.load_workbook(self.file2)
+                
+                try:
+                    self.book1 = openpyxl.load_workbook(self.file1)
+                except zipfile.BadZipFile:
+                    raise OSError('Unable to open %s.' % self.file1)
+                
+                try:
+                    self.book2 = openpyxl.load_workbook(self.file2)
+                except zipfile.BadZipFile:
+                    raise OSError('Unable to open %s.' % self.file2)
         
     # ====================================================================== #
     def unload(self):
