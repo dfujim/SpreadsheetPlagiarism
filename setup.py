@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     
 setuptools.setup(
     name="compsheet",
-    version="1.0.7",
+    version="1.0.8",
     author="Derek Fujimoto",
     author_email="fujimoto@phas.ubc.ca",
     description="compare microsoft spreadsheet data to check for plagiarism",
