@@ -61,7 +61,8 @@ class comparer(object):
         for shtnm in book.sheetnames:
             sht = book[shtnm]
             str1.extend([cell.value for row in sl(sht.rows) for cell in sl(row)\
-                         if type(cell.value) is str and cell.value[0] != '='])
+                         if type(cell.value) is str and len(cell.value)>0 \
+                         and cell.value[0] != '='])
         return str1
         
     # ====================================================================== #
