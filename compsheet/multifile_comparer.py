@@ -140,14 +140,18 @@ class multifile_comparer(object):
     header_sht_name = 'Header Explanation'
     
     # ====================================================================== #
-    def __init__(self,filelist,nproc=1):
+    def __init__(self,filelist,nproc=1,relpath=False):
         """
-            filelist: list of filenames, OR string of directory to fetch all 
-                      files, or wildcard string of file format. 
+            filelist:   list of filenames, OR string of directory to fetch all 
+                            files, or wildcard string of file format. 
+            nproc:      number of processors to use in comparison
+            relapth:    if true, link files using relative paths, instead of 
+                            absolute    
         """
         
-        # save number of processors
+        # save input
         self.nproc = nproc
+        self.relpath = relpath
         
         # save filelist
         if type(filelist) == str:
@@ -441,8 +445,12 @@ class multifile_comparer(object):
             sht1 = cmpr.sht1
             sht2 = cmpr.sht2
             
-            path1 = os.path.abspath(cmpr.file1).strip()
-            path2 = os.path.abspath(cmpr.file2).strip()
+            if self.relpath:
+                path1 = cmpr.file1.strip()
+                path2 = cmpr.file2.strip()
+            else:
+                path1 = os.path.abspath(cmpr.file1).strip()
+                path2 = os.path.abspath(cmpr.file2).strip()
             
             # filenames
             sht.cell(row=r,column=1).hyperlink = ("%s#%s" % (path1,sht1))

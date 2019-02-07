@@ -67,6 +67,12 @@ if __name__ == '__main__':
                         action='store',
                         default=1)
     
+    # dry-run don't save spreadsheet
+    parser.add_argument("-rp", "--relpath",
+                        help="use relative path links in output spreadsheet",
+                        dest='rel',
+                        action='store_true',
+                        default=False)    
     # options
     opt_help=dedent("""\
             comma-separated list of items to compare 
@@ -112,7 +118,7 @@ if __name__ == '__main__':
     
     else:
         try:
-            c = mc.multifile_comparer(args.PATH,int(args.nproc))
+            c = mc.multifile_comparer(args.PATH,int(args.nproc),args.rel)
         except IOError as err:
             print(err)
             sys.exit()
