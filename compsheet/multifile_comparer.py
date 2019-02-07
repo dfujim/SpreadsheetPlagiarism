@@ -136,6 +136,9 @@ class multifile_comparer(object):
     # string width for printing columns
     strwidth = 50
 
+    # column order for printing
+
+
     # name of header explanation sheet
     header_sht_name = 'Header Explanation'
     
@@ -205,6 +208,33 @@ class multifile_comparer(object):
                                        total=ncompare))
         
     # ====================================================================== #
+    def _skip_column(self,colname):
+        """
+            Determine if column should be printed. 
+            True if skip, False if print.
+        """
+        
+        # if this in colname
+        thisin = ('ntotal','nsame','score')
+        
+        # if colname in this
+        inthis = tuple()
+        
+        # if colname equals this
+        equalsthis = ('create_time2','create_name2')
+        
+        # do comparisons
+        thisin = any([i in colname for i in thisin])
+        inthis = any([colname in i for i in inthis])
+        equalsthis = any([colname == i for i in equalsthis])
+        
+        # return if any matches
+        if thisin or inthis or equalsthis:
+            return True
+        else:
+            return False
+        
+    # ====================================================================== #
     def compare(self,options='meta,exact,string,geo',do_print=False,do_verbose=False):
         """
             Run comparisons on the paired files
@@ -258,7 +288,7 @@ class multifile_comparer(object):
         for k in colkeys:  
         
             # don't print ntotal or nsame or score
-            if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
+            if self._skip_column(k): continue
             
             # add to list
             s += k.ljust(keys_columns_size[k])
@@ -273,7 +303,7 @@ class multifile_comparer(object):
             for k in colkeys:
                 
                 # don't print ntotal or nsame or score
-                if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
+                if self._skip_column(k): continue
                     
                 # get value 
                 value = keys_columns[k][i]
@@ -395,7 +425,7 @@ class multifile_comparer(object):
         for k in colkeys:  
         
             # don't print ntotal or nsame or score
-            if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
+            if self._skip_column(k): continue
             
             # write
             sht.cell(row=1,column=c,value=k)
@@ -430,7 +460,7 @@ class multifile_comparer(object):
             for k in colkeys:
                 
                 # don't print ntotal or nsame or score
-                if 'ntotal' in k or 'nsame' in k or 'score' in k: continue  
+                if self._skip_column(k): continue
                     
                 # get value 
                 value = keys_columns[k][i]

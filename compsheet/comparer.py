@@ -320,9 +320,26 @@ class comparer(object):
         
         # set to self
         self.results['modify_time'] = mod
+        self.results['modify_time1'] = prop1.modified
+        self.results['modify_time2'] = prop2.modified
+        
         self.results['create_time'] = create
+        
+        if create is True:
+            self.results['create_time (shared)'] = prop1.created
+        else:
+            self.results['create_time (shared)'] = ""
+        
         self.results['create_name'] = creator_name
+        
+        if creator_name is True:
+            self.results['create_name (if shared)'] = prop1.creator
+        else:
+            self.results['create_name (if shared)'] = ""
+        
         self.results['modify_name'] = modified_name
+        self.results['modify_name1'] = prop1.lastModifiedBy
+        self.results['modify_name2'] = prop2.lastModifiedBy
         
         return (mod,create,creator_name,modified_name)
 
