@@ -136,9 +136,6 @@ class multifile_comparer(object):
     # string width for printing columns
     strwidth = 50
 
-    # column order for printing
-
-
     # name of header explanation sheet
     header_sht_name = 'Header Explanation'
     

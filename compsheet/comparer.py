@@ -37,6 +37,8 @@ class comparer(object):
     
     all_opt_str = 'meta,exact,string,geo'   # do these if option = 'all'
     
+    bad_names = ('None','User','Windows','openpyxl')    # bad author names
+    
     # ====================================================================== #
     def __init__(self,file1,file2):
         """
@@ -75,15 +77,13 @@ class comparer(object):
         """
         
         namebool = name1 == name2
+        bad = any([nm in str(name1) for nm in self.bad_names])
         
-        if namebool and (type(name1) == type(None) or \
-                        'User' in name1 or \
-                        'Windows' in name1 or \
-                        'openpyxl' in name1): 
+        if namebool and bad:
             namebool = 'Unclear'
-        
+                
         return namebool
-    
+        
     # ====================================================================== #
     def cmpr_strings(self,do_print=False):
         """
@@ -325,14 +325,14 @@ class comparer(object):
         
         self.results['create_time'] = create
         
-        if create is True:
+        if create is not False:
             self.results['create_time (shared)'] = prop1.created
         else:
             self.results['create_time (shared)'] = ""
         
         self.results['create_name'] = creator_name
         
-        if creator_name is True:
+        if creator_name is not False:
             self.results['create_name (if shared)'] = prop1.creator
         else:
             self.results['create_name (if shared)'] = ""
