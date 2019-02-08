@@ -8,6 +8,7 @@ import warnings
 import itertools 
 import zipfile
 import logging
+import os
 
 # ========================================================================== #
 class comparer(object):
