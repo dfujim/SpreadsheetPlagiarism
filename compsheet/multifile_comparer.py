@@ -220,6 +220,13 @@ class multifile_comparer(object):
                                        total=ncompare) if c is not None]
         
     # ====================================================================== #
+    def _dry_load(self,mapfn,load_fn):
+        """Load and unload all files to try to find bad formatting"""
+        sw = self.strwidth
+        ncompare = len(self.filelist)
+        list(tqdm(mapfn(load_fn,self.filelist),total=ncompare))
+        
+    # ====================================================================== #
     def _skip_column(self,colname):
         """
             Determine if column should be printed. 
@@ -264,6 +271,19 @@ class multifile_comparer(object):
         else:
             self._compare(map,cm,do_verbose)
             
+    # ====================================================================== #
+    def dry_load(self):
+        """Load and unload all files to try to find bad formatting"""
+        logging.info('Running dry load for %d comparisons...',len(self.comparers))
+        if self.nproc > 1:
+            p = Pool(self.nproc)
+            try:
+                self._dry_load(p.imap_unordered,do_dry_load)
+            finally:
+                p.close()
+        else:
+            self._dry_load(map,do_dry_load)
+        
     # ====================================================================== #
     def print_spreadsheet(self,filename='',limit_output=False):
         """
@@ -454,3 +474,11 @@ def do_compare(c,options):
         logging.warning('Skipping comparison between "%s" and "%s"',c.file1,c.file2)
         return 
     return c
+
+# ========================================================================== #
+def do_dry_load(filename):
+    try:
+        openpyxl.load_workbook(filename)
+    except Exception as err:
+        logging.error('Unable to open file "%s". openpyxl %s: "%s"',
+                      os.path.basename(filename),err.__class__.__name__,err)

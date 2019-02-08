@@ -491,17 +491,17 @@ class comparer(object):
                 try:
                     self.book1 = openpyxl.load_workbook(self.file1)
                 except Exception as err:
-                    logging.error('Unable to open file "%s". '+\
-                                  'openpyxl %s: "%s"',
-                                  self.file1,err.__class__.__name__,err)
+                    logging.error('Unable to open file "%s". openpyxl %s: "%s"',
+                                  os.path.basename(self.file1),
+                                  err.__class__.__name__,err)
                     raise OSError('Unable to open file "%s".' % self.file1)
                 
                 try:
                     self.book2 = openpyxl.load_workbook(self.file2)
                 except Exception as err:
-                    logging.error('Unable to open file "%s". '+\
-                                  'openpyxl %s: "%s"',
-                                  self.file2,err.__class__.__name__,err)
+                    logging.error('Unable to open file "%s". openpyxl %s: "%s"',
+                                  os.path.basename(self.file2),
+                                  err.__class__.__name__,err)
                     raise OSError('Unable to open file "%s".' % self.file2)
         
     # ====================================================================== #

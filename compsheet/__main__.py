@@ -87,20 +87,6 @@ if __name__ == '__main__':
                         dest='savefile',
                         action='store',
                         default='')
-                        
-    # print table
-    parser.add_argument("-tb", "--table",
-                        help='print summary table of all comparisons',
-                        dest='table',
-                        action='store_true',
-                        default=False)
-    
-    # output to text file
-    parser.add_argument("-tx", "--text",
-                        help='write printout table to text file',
-                        dest='textfile',
-                        action='store',
-                        default='')
     
     # verbose mode
     parser.add_argument("-v", "--verbose",
@@ -134,16 +120,12 @@ if __name__ == '__main__':
             sys.exit()
             
         # dry run: check file open
-        if not args.dry:
-            pass
+        if args.dry:
+            c.dry_load()
             
         # run comparison
         else:
             c.compare(options=args.options,do_verbose=args.verbose)
-        
-            # print summary table
-            if args.table or args.textfile != '':
-                c.print_table(filename=args.textfile)
                 
             # save spreadsheet
             if not args.dry:
