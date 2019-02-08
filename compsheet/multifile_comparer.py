@@ -480,5 +480,7 @@ def do_dry_load(filename):
     try:
         openpyxl.load_workbook(filename)
     except Exception as err:
-        logging.error('Unable to open file "%s". openpyxl %s: "%s"',
-                      os.path.basename(filename),err.__class__.__name__,err)
+        s = 'Unable to open file "%s". openpyxl %s: "%s"' % \
+                        (os.path.basename(filename),err.__class__.__name__,err)
+        logging.error(s)
+        tqdm.write(s)
