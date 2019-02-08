@@ -5,7 +5,7 @@
 import openpyxl
 import numpy as np
 import os,glob,sys,re
-import logging
+import logging,warnings
 from pathlib import Path
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill
@@ -178,12 +178,12 @@ class multifile_comparer(object):
         
         # check if string is directory: fetch all files there
         if os.path.isdir(string):
-            logging.debug('Fetching filelist from directory "%s"',string)
+            logging.info('Fetching filelist from directory "%s"',string)
             filelist = glob.glob(os.path.join(string,"*"))
         
         # otherwise get files from wildcard
         else:
-            logging.debug('Fetching filelist from wildcard string "%s"',string)
+            logging.info('Fetching filelist from wildcard string "%s"',string)
             filelist = glob.glob(string)
         
         # discard all files with bad extensions
@@ -274,7 +274,7 @@ class multifile_comparer(object):
     # ====================================================================== #
     def dry_load(self):
         """Load and unload all files to try to find bad formatting"""
-        logging.info('Running dry load for %d comparisons...',len(self.comparers))
+        logging.info('Running dry load for %d files...',len(self.filelist))
         if self.nproc > 1:
             p = Pool(self.nproc)
             try:
@@ -477,10 +477,12 @@ def do_compare(c,options):
 
 # ========================================================================== #
 def do_dry_load(filename):
-    try:
-        openpyxl.load_workbook(filename)
-    except Exception as err:
-        s = 'Unable to open file "%s". openpyxl %s: "%s"' % \
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        try:
+            openpyxl.load_workbook(filename)
+        except Exception as err:
+            s = 'Unable to open file "%s". openpyxl %s: "%s"' % \
                         (os.path.basename(filename),err.__class__.__name__,err)
-        logging.error(s)
-        tqdm.write(s)
+            logging.error(s)
+            tqdm.write(s)
