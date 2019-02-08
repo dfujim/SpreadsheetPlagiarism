@@ -7,6 +7,7 @@ import numpy as np
 import warnings
 import itertools 
 import zipfile
+import logging
 
 # ========================================================================== #
 class comparer(object):
@@ -85,7 +86,7 @@ class comparer(object):
         return namebool
         
     # ====================================================================== #
-    def cmpr_strings(self,do_print=False):
+    def cmpr_strings(self):
         """
             Compare all non-formulae, non numeric entries.
             
@@ -99,6 +100,8 @@ class comparer(object):
                 nsame_str, ntotal_str, nexcess_str: as described above
                 sim_str: nsame/ntotal
         """
+        
+        logging.debug('Comparing strings')
         
         # get strings from workbooks
         str1 = self._get_str(self.book1)
@@ -124,10 +127,8 @@ class comparer(object):
             sim = 0
             
         # print results
-        if do_print:
-            print("Strings with exact match: %d/%d (%.2f" % \
-                        (nsame,ntotal,sim*100) +\
-                  "%) " + "with %d strings in excess." % nexcess)            
+        logging.debug("Strings with exact match: %d/%d (%.2f" % 
+            (nsame,ntotal,sim*100) +"%) with %d strings in excess." % nexcess)            
         
         # set to self
         self.results['nsame_str'] = nsame
@@ -138,7 +139,7 @@ class comparer(object):
         return (nsame,ntotal,nexcess)
         
     # ====================================================================== #
-    def cmpr_exact_values(self,do_print=False):
+    def cmpr_exact_values(self):
         """
             Compare cell values for exact match. Not intelligent. 
             
@@ -197,10 +198,9 @@ class comparer(object):
             
         nsame,ntotal,sim = self.get_sim(same,total,sim_frac)
             
-        # print results
-        if do_print:
-            print("Shared range cell content exact match: %d/%d (%.2f" % \
-                        (nsame,ntotal,sim*100) + "%)")
+        # logging
+        logging.debug("Shared range cell content exact match: %d/%d (%.2f" % \
+                     (nsame,ntotal,sim*100) + "%)")
         
         # set to self
         self.results['nsame_xct'] = nsame
@@ -210,7 +210,7 @@ class comparer(object):
         return (nsame,ntotal)
     
     # ====================================================================== #
-    def cmpr_geo(self,do_print=False):
+    def cmpr_geo(self):
         """
             Compare cell geography (Filled/unfilled)
             
@@ -275,10 +275,9 @@ class comparer(object):
 
         nsame,ntotal,sim = self.get_sim(same,total,sim_frac)
                 
-        # print results
-        if do_print:
-            print("Most similar shared range cell content geography match: %d/%d (%.2f" % \
-                        (nsame,ntotal,sim*100) + "%)")
+        # logging
+        logging.debug("Most similar shared range cell content geography "+\
+                      "match: %d/%d (%.2f" % (nsame,ntotal,sim*100) + "%)")
         
         # set to self
         self.results['nsame_geo'] = nsame
@@ -288,7 +287,7 @@ class comparer(object):
         return (nsame,ntotal)
         
     # ====================================================================== #
-    def cmpr_meta(self,do_print=False):
+    def cmpr_meta(self):
         """
             Compare meta data
             
@@ -313,10 +312,9 @@ class comparer(object):
         creator_name = self._cmpr_names(prop1.creator,prop2.creator)
         modified_name = self._cmpr_names(prop1.lastModifiedBy,prop2.lastModifiedBy)
         
-        # print results
-        if do_print:
-            print('Sheet modification time is identical: %s' % str(mod))
-            print('Sheet creation time is identical:     %s' % str(create))
+        # logging
+        logging.debug('Sheet modification time is identical: %s' % str(mod))
+        logging.debug('Sheet creation time is identical:     %s' % str(create))
         
         # set to self
         self.results['modify_time'] = mod
@@ -344,7 +342,7 @@ class comparer(object):
         return (mod,create,creator_name,modified_name)
 
     # ====================================================================== #
-    def compare(self,options='meta,exact,string,geo',do_print=False):
+    def compare(self,options='meta,exact,string,geo'):
         """
             Run comparisons on the two files
             
@@ -357,6 +355,8 @@ class comparer(object):
                 all: do all of the above
         """
         
+        logging.debug('Comparing "%s" to "%s"',self.file1,self.file2)
+        
         # load files
         self.load()
         
@@ -364,31 +364,29 @@ class comparer(object):
         self.sht1 = self.book1.active.title
         self.sht2 = self.book2.active.title
         
-        # print
-        if do_print:
-            print("Comparing %s and %s" % (self.file1,self.file2))
-        
         # get options
         if options.lower() == 'all': options = self.all_opt_str
         options = options.split(',')
         
         # run options
         if 'meta' in options:
-            self.cmpr_meta(do_print=do_print)
+            self.cmpr_meta()
         
         if 'exact' in options: 
-            self.cmpr_exact_values(do_print=do_print)
+            self.cmpr_exact_values()
             
         if 'string' in options:
-            self.cmpr_strings(do_print=do_print)
+            self.cmpr_strings()
             
         if 'geo' in options:
-            self.cmpr_geo(do_print=do_print)
+            self.cmpr_geo()
     
         self.make_compare_score()
         
         # close files 
         self.unload()
+        
+        logging.debug('Comparison finished')
     
     # ====================================================================== #
     def get_sim(self,same,total,sim_frac):
@@ -492,13 +490,19 @@ class comparer(object):
                 
                 try:
                     self.book1 = openpyxl.load_workbook(self.file1)
-                except zipfile.BadZipFile:
-                    raise OSError('Unable to open %s.' % self.file1)
+                except Exception as err:
+                    logging.error('Unable to open file "%s". '+\
+                                  'openpyxl %s: "%s"',
+                                  self.file1,err.__class__.__name__,err)
+                    raise OSError('Unable to open file "%s".' % self.file1)
                 
                 try:
                     self.book2 = openpyxl.load_workbook(self.file2)
-                except zipfile.BadZipFile:
-                    raise OSError('Unable to open %s.' % self.file2)
+                except Exception as err:
+                    logging.error('Unable to open file "%s". '+\
+                                  'openpyxl %s: "%s"',
+                                  self.file2,err.__class__.__name__,err)
+                    raise OSError('Unable to open file "%s".' % self.file2)
         
     # ====================================================================== #
     def unload(self):

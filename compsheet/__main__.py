@@ -4,6 +4,8 @@
 
 import compsheet.multifile_comparer as mc
 import os, argparse, sys
+import logging
+from datetime import datetime
 from textwrap import dedent
 
 # run if main
@@ -32,7 +34,7 @@ if __name__ == '__main__':
 
     # dry-run don't save spreadsheet
     parser.add_argument("-d", "--dry",
-                        help="dry run, don't write to speadsheet",
+                        help="dry run, just check if files can by opened",
                         dest='dry',
                         action='store_true',
                         default=False)
@@ -43,22 +45,14 @@ if __name__ == '__main__':
                         dest='explain',
                         action='store_true',
                         default=False)
-
-    # print lines
-    parser.add_argument("-f", "--full",
-                        help=dedent("""\
-                            print full detailed summary of each comparison 
-                                (don't use with a large number of comparisons)"""),
-                        dest='full',
-                        action='store_true',
-                        default=False)
-
-    # log
+    
+    # logging level
     parser.add_argument("-l", "--log",
-                        help='write printout table to text file',
-                        dest='logfile',
+                        help='choose logging level (DEBUG, INFO[default], '+\
+                             'WARNING, ERROR, CRITICAL)',
+                        dest='loglevel',
                         action='store',
-                        default='')
+                        default='INFO')
     
     # number of processors
     parser.add_argument("-n", "--nproc",
@@ -95,11 +89,18 @@ if __name__ == '__main__':
                         default='')
                         
     # print table
-    parser.add_argument("-t", "--table",
+    parser.add_argument("-tb", "--table",
                         help='print summary table of all comparisons',
                         dest='table',
                         action='store_true',
                         default=False)
+    
+    # output to text file
+    parser.add_argument("-tx", "--text",
+                        help='write printout table to text file',
+                        dest='textfile',
+                        action='store',
+                        default='')
     
     # verbose mode
     parser.add_argument("-v", "--verbose",
@@ -117,17 +118,35 @@ if __name__ == '__main__':
         print(mc.explanation)
     
     else:
+        # Setup logging
+        fmt = '%(asctime)s %(module)-18s %(levelname)-8s %(message)s'
+        logging.basicConfig(filename='compsheet.log',
+                            format=fmt,
+                            filemode='w',
+                            level=getattr(logging,args.loglevel.upper()))
+        logging.info('Starting')
+        
+        # Make multifile comparer
         try:
             c = mc.multifile_comparer(args.PATH,int(args.nproc),args.rel)
         except IOError as err:
             print(err)
             sys.exit()
-        c.compare(options=args.options,do_print=args.full,do_verbose=args.verbose)
-        
-        # print summary table
-        if args.table or args.logfile != '':
-            c.print_table(filename=args.logfile)
             
-        # save spreadsheet unless dry run
+        # dry run: check file open
         if not args.dry:
-            c.print_spreadsheet(filename=args.savefile,limit_output=not args.all)
+            pass
+            
+        # run comparison
+        else:
+            c.compare(options=args.options,do_verbose=args.verbose)
+        
+            # print summary table
+            if args.table or args.textfile != '':
+                c.print_table(filename=args.textfile)
+                
+            # save spreadsheet
+            if not args.dry:
+                c.print_spreadsheet(filename=args.savefile,limit_output=not args.all)
+
+        logging.info('Finished')

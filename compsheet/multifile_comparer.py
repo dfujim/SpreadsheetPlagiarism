@@ -5,6 +5,7 @@
 import openpyxl
 import numpy as np
 import os,glob,sys,re
+import logging
 from pathlib import Path
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill
@@ -158,6 +159,10 @@ class multifile_comparer(object):
             self.set_filelist(filelist)
         else:
             self.filelist = filelist
+        
+        # logging
+        logging.info('Link relative file paths in spreadsheet: %s',relpath)
+        logging.info('Number of processors: %d',nproc)
 
         # build comparer objects
         nfiles = len(self.filelist)
@@ -173,10 +178,12 @@ class multifile_comparer(object):
         
         # check if string is directory: fetch all files there
         if os.path.isdir(string):
+            logging.debug('Fetching filelist from directory "%s"',string)
             filelist = glob.glob(os.path.join(string,"*"))
         
         # otherwise get files from wildcard
         else:
+            logging.debug('Fetching filelist from wildcard string "%s"',string)
             filelist = glob.glob(string)
         
         # discard all files with bad extensions
@@ -187,6 +194,7 @@ class multifile_comparer(object):
                            
         # check for empty directory
         if len(self.filelist) < 2:
+            logging.error("Not enough files in directory.")
             raise IOError("Not enough files in directory.")
 
     # ====================================================================== #
@@ -196,17 +204,20 @@ class multifile_comparer(object):
         sw = self.strwidth
         ncompare = len(self.comparers)
         if do_verbose:
+            logging.debug('Running in verbose mode')
             cmpr = []
             for i,c in tqdm(enumerate(mapfn(compare_fn,self.comparers)),total=ncompare):
                 tqdm.write("(%d/%d) %s\t%s" % \
                         (i+1,ncompare,
                         os.path.basename(c.file1)[:sw].ljust(sw),
                         os.path.basename(c.file2)[:sw].ljust(sw)))
-                cmpr.append(c)
+                if c is not None:
+                    cmpr.append(c)
             self.comparers = cmpr
         else:
-            self.comparers = list(tqdm(mapfn(compare_fn,self.comparers),
-                                       total=ncompare))
+            logging.debug('Not running in verbose mode')
+            self.comparers = [c for c in tqdm(mapfn(compare_fn,self.comparers),
+                                       total=ncompare) if c is not None]
         
     # ====================================================================== #
     def _skip_column(self,colname):
@@ -236,14 +247,14 @@ class multifile_comparer(object):
             return False
         
     # ====================================================================== #
-    def compare(self,options='meta,exact,string,geo',do_print=False,do_verbose=False):
+    def compare(self,options='meta,exact,string,geo',do_verbose=False):
         """
             Run comparisons on the paired files
             
             Options: same as comparer.compare
         """
-        print('Running %d comparisons...' % len(self.comparers))
-        cm = partial(do_compare,options=options,do_print=do_print)
+        logging.info('Running %d comparisons...',len(self.comparers))
+        cm = partial(do_compare,options=options)
         if self.nproc > 1:
             p = Pool(self.nproc)
             try:
@@ -368,9 +379,6 @@ class multifile_comparer(object):
                           cmpr_disp_limit
         """
         
-        # print status
-        print('Starting file write. This may make a few minutes...',end='\r')
-        
         # get directory
         dirname = os.path.dirname(str(Path(self.filelist[0]).resolve()))
         dirname = re.sub('/|\\\\','',dirname.replace(os.path.dirname(dirname),''))
@@ -384,12 +392,17 @@ class multifile_comparer(object):
             s[1] = '.xlsx'
             filename = s[0]+s[1]
         
+        # logging
+        logging.info('Starting write to spreadsheet "%s"' % filename)
+        
         # if file exits read, else make new
         if os.path.isfile(filename):
             book = openpyxl.load_workbook(filename=filename)
+            logging.debug('Appending to existing spreadsheet file')
         else:
             book = openpyxl.Workbook()
             del book['Sheet']    
+            logging.debug('Made new spreadsheet file')
         
         # make sheet for explaination 
         if self.header_sht_name not in book.sheetnames:
@@ -533,12 +546,16 @@ class multifile_comparer(object):
         book.active = shtnames.index(maxsht)+1
         book.save(filename)
         
+        logging.info('Output spreadsheet saved successfully.')
         print('Spreadsheet summary written to %s' % filename,end=' '*30+'\n')
         
         return book
 
 # ========================================================================== #
-def do_compare(c,options,do_print):
-    c.compare(options=options,do_print=do_print)
-    if do_print:    print('')
+def do_compare(c,options):
+    try:
+        c.compare(options=options)
+    except IOError:
+        logging.warning('Skipping comparison between "%s" and "%s"',c.file1,c.file2)
+        return 
     return c
