@@ -129,7 +129,7 @@ class comparer(object):
             
         # print results
         logging.debug("Strings with exact match: %d/%d (%.2f" % 
-            (nsame,ntotal,sim*100) +"%) with %d strings in excess." % nexcess)            
+            (nsame,ntotal,sim*100) +"%) "+"with %d strings in excess." % nexcess)            
         
         # set to self
         self.results['nsame_str'] = nsame
